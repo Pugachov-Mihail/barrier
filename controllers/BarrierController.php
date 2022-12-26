@@ -1,6 +1,7 @@
 <?php 
     namespace app\controllers;
 
+    use app\models\BlackList;
     use yii\web\Controller;
 
     class BarrierController extends Controller
@@ -8,12 +9,11 @@
         public function actionNumber($number){
             return $number;
         }
-        public function actionDebtor($must, $count)
+        public function actionDebtor($number)
         {
-            #$request = Yii::$app->request;
-            #$body = $request -> bodyParams;
-            $massage = "0;0 - все ok \n
-                1;". $must . " должен " . $count . " денег ";
-            return $massage;
+            $query = BlackList::find();
+            $user = $query->filterWhere(['number'=>$number]);
+
+            return "$user";
         }
     }
