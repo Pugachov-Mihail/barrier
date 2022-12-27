@@ -1,18 +1,15 @@
-from gpiozero import DigitalOutputDevice
+from gpiozero import OutputDevice
 import time
 
-rele = DigitalOutputDevice(27)
-A = True
-
 def main():
-    global A
+    rele = OutputDevice(4)
     rele.on()
     time.sleep(1)
-    A = False
+    rele.close()
+    time.sleep(1)
 
 
 
 if __name__ in "__main__":
-    while A:
-        main()
+    main()
        
