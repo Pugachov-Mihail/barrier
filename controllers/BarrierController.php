@@ -22,7 +22,7 @@
                     $e = escapeshellcmd('/home/admin/Desktop/backend/web/rele.py');
                     $command = exec($e);
                     echo "<br/>";
-                    echo exec("ls -l");
+                    echo exec("a.php");
                     print_r($command);
                     //echo "0; 0 - всё OK" . $command;
                 }
