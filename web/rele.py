@@ -1,9 +1,10 @@
+#!/usr/bin/python3
+
 from gpiozero import OutputDevice
 import time
 
 def main():
     rele = OutputDevice(4)
-    print("Hi")
     rele.on()
     time.sleep(1)
     rele.close()
