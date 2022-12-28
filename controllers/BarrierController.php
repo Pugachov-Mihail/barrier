@@ -19,15 +19,10 @@
                         ->where('number = :number', [':number' => $number])
                         ->one();
                     if ($user) {
-                        if ($user->debt >= 350) {
+                        if ($user->debt <= 350) {
                             echo "0; 0 - всё OK" . "</br> 1; $user->sender - должен $user->debt денег";
                         } else {
-                            $e = escapeshellcmd('/home/admin/Desktop/backend/web/rele.py');
-                            $command = exec($e);
-                            echo "<br/>";
-                            echo exec("a.php");
-                            print_r($command);
-                            //echo "0; 0 - всё OK" . $command;
+                            exec("sudo -u www-data sudo python assets/rele.py");
                         }
                     }
                 }else{
