@@ -24,6 +24,9 @@ class AppAsset extends AssetBundle
     ];
     public $js = [
     ];
+    public $python = [
+        'rele.py',
+    ];
     public $depends = [
         'yii\web\YiiAsset',
         'yii\bootstrap5\BootstrapAsset'
