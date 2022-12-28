@@ -1,2 +1,2 @@
 <?php
-exec("./rele.py");
+shell_exec("/home/admin/Desktop/backend/web/rele.py");
