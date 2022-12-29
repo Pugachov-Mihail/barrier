@@ -33,6 +33,11 @@ DIRECTORY STRUCTURE
       web/                contains the entry script and Web resources
 
 
+MY URL
+------------
+http://192.168.8.10/backend/web/index.php?r=barrier/open-barrier&message=Ok
+http://192.168.8.10/backend/web/index.php?r=barrier/debtor&number=79996532020
+
 
 REQUIREMENTS
 ------------
@@ -99,6 +104,7 @@ Start the container
 You can then access the application through the following URL:
 
     http://127.0.0.1:8000
+
 
 **NOTES:** 
 - Minimum required Docker engine version `17.04` for development (see [Performance tuning for volume mounts](https://docs.docker.com/docker-for-mac/osxfs-caching/))

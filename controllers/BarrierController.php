@@ -6,12 +6,19 @@
 
     class BarrierController extends Controller
     {
-        public function actionNumber($number){
-            return $number;
+        public function actionOpenBarrier($message){
+            if($message=="Ok"){
+                echo "0; 0 - всё OK";
+                exec("sudo -u www-data sudo python assets/rele.py");
+                return;
+            }else{
+                return;
+            } 
         }
+
         public function actionDebtor($number)
         {
-            if(preg_match("/[0-9]{0,11}/", $number)){
+            if($result = preg_match("/[0-9]{0,11}/", $number)){
                 if(strlen($number)==11) {
                     $query = ListOfDebtors::find();
 
@@ -19,17 +26,23 @@
                         ->where('number = :number', [':number' => $number])
                         ->one();
                     if ($user) {
-                        if ($user->debt <= 350) {
+                        if ($user->debt > 0) {
                             echo "0; 0 - всё OK" . "</br> 1; $user->sender - должен $user->debt денег";
+                            return;
                         } else {
                             exec("sudo -u www-data sudo python assets/rele.py");
+                            return;
                         }
                     }
                 }else{
-                    echo "Короткий номер";
+                    echo "Некорректный номер";
+                    return;
                 }
             } else{
                 echo "Некорректный номер";
+                return;
             }
+            echo $result . "Error";
+            return;
         }
     }
