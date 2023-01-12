@@ -32,21 +32,26 @@ class UploadForm extends Model
         }
     }
     //Парсинг csv файла
-    public function generateQueryDB($csvFile){
+    public function parsingCsvFile($csvFile){
+        $returnArray = [
+            'number' => '',
+            'name'=>''
+        ];
         $csv = fopen(\Yii::getAlias('@app/web/upload/') . $csvFile, 'r');
-       // fputs($csv, chr(0xEF) . chr(0xBB) . chr(0xBF));
         while(($csvArray = fgetcsv($csv, 1000, ';', ' ', ' '))!==false){
-            foreach ($csvArray as $value) {
-                $c = mb_convert_encoding($value, "IBM866", "Windows-1251");
-                //iconv("ASCII", "UTF-8", $value);
-                $a = mb_detect_encoding($c);
-                print_r($c);
-                print_r($a);
-                echo '<hr>';
-            }
+            $up_text = mb_strtoupper($csvArray[0]);
+            $key_array = ['А', 'В', 'Е', 'Х', 'К', 'М','Н','О','Р','С','Т','У'];
+            $value_arr = ["A","B","E","X","K","M","H","O","P","C","T","Y"];
+            $num = str_replace($key_array, $value_arr, $up_text,);
+            $returnArray['number'] = $num;
+            $returnArray['name'] = $csvArray[1];
         };
         fclose($csv);
+        return $num;
+    }
 
-        return;
+    static function saveDataCsvFileDb($number, $name, $model=0){
+            print_r($name . " " . $number);
+            return "dsadsa";
     }
 }

@@ -91,17 +91,13 @@ class SiteController extends Controller
         $model = new UploadForm();
         Yii::$app->language = 'ru-RU';
         if (Yii::$app->request->isPost){
-            header('Content-Type: text/html; charset=utf-8');
-            $model->csvFile = UploadedFile::getInstance($model, 'csvFile');
             if ($model->upload()){
                 echo $model->csvFile . '<br/>';
-                $a = $model->generateQueryDB($model->csvFile);
-//                foreach ($a as $g){
-//                    iconv_set_encoding($g, 'UTF-8');
-//                }
+                $parsing = $model->parsingCsvFile($model->csvFile);
+                //$a = $model->saveDataCsvFileDb($parsing, $model);
                  //$this->redirect(['index']);
+                return $parsing;
             }
-            return $a;
         }
         return $this->render('loadCsv', ['model'=>$model]);
     }
