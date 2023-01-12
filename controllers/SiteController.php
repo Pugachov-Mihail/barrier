@@ -2,6 +2,8 @@
 
 namespace app\controllers;
 
+use app\models\ListOfDebtors;
+use app\models\UploadForm;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -9,6 +11,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use yii\web\UploadedFile;
 
 class SiteController extends Controller
 {
@@ -61,9 +64,47 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
+       // $this->csvReader();
         return $this->render('index');
     }
 
+    // функция добавления в csv - LPList
+    public function actionCsvReader(){
+        //Название таблицы в малине
+        $query = ListOfDebtors::find()->all();
+        $fp = fopen('php://output', 'w');
+        if ($fp)
+        {
+            // Перебор и запись в файл
+            foreach ($query as $value) {
+                fputs($fp,
+                    "$value->id; $value->number; $value->sender;\r\n"); ;
+            }
+            header('Content-type: text/csv');
+            header('Content-Disposition: attachment; filename="export_' . date('d.m.Y') . '.csv"');
+        }
+        fclose($fp);
+        die;
+    }
+//Страница с загрузкой Csv файла
+    public function actionLoadCsvFile(){
+        $model = new UploadForm();
+        Yii::$app->language = 'ru-RU';
+        if (Yii::$app->request->isPost){
+            header('Content-Type: text/html; charset=utf-8');
+            $model->csvFile = UploadedFile::getInstance($model, 'csvFile');
+            if ($model->upload()){
+                echo $model->csvFile . '<br/>';
+                $a = $model->generateQueryDB($model->csvFile);
+//                foreach ($a as $g){
+//                    iconv_set_encoding($g, 'UTF-8');
+//                }
+                 //$this->redirect(['index']);
+            }
+            return $a;
+        }
+        return $this->render('loadCsv', ['model'=>$model]);
+    }
     /**
      * Login action.
      *
