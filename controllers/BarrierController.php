@@ -23,13 +23,21 @@
                     $query = ListOfDebtors::find();
 
                     $user = $query
-                        ->where('number = :number', [':number' => $number])
+ 
+                    ->where('number = :number', [':number' => $number])
                         ->one();
                     if ($user) {
                         if ($user->debt > 0) {
-                            echo "0; 0 - всё OK" . "</br> 1; $user->sender - должен $user->debt денег";
+                            echo "1; $user->sender" . " " .  "$user->debt";
                             return;
-                        } else {
+                        } 
+                        elseif ($user->vip = 1){
+                            echo "0;-";
+                            exec("sudo -u www-data sudo python assets/rele.py");
+                            return;
+                        }                  
+                        else {
+                            echo "0;-";
                             exec("sudo -u www-data sudo python assets/rele.py");
                             return;
                         }
