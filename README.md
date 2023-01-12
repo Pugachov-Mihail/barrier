@@ -36,6 +36,8 @@ DIRECTORY STRUCTURE
 MY URL
 ------------
 http://192.168.8.10/backend/web/index.php?r=barrier/open-barrier&message=Ok
+
+
 http://192.168.8.10/backend/web/index.php?r=barrier/debtor&number=79996532020
 
 
