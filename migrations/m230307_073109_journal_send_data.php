@@ -3,9 +3,9 @@
 use yii\db\Migration;
 
 /**
- * Class m230306_133005_history_send_info
+ * Class m230307_073109_journal_send_data
  */
-class m230306_133005_history_send_info extends Migration
+class m230307_073109_journal_send_data extends Migration
 {
     /**
      * {@inheritdoc}
@@ -13,12 +13,12 @@ class m230306_133005_history_send_info extends Migration
     public function safeUp()
     {
         $this->createTable(
-            "{{%history_send_info}}",
+            "{{%journal_send_data}}",
             [
                 'id' => $this->primaryKey(),
-                'data_response' => $this->json()->null()->defaultValue(null),
+                'json_object' => $this->json()->null()->defaultValue(null),
                 'date_send' => $this->integer(11)->null()->defaultValue(null),
-                'response_status' => $this->boolean()->null()->defaultValue(null),
+                'state_response' => $this->boolean()->null()->defaultValue(null),
             ]
         );
     }
@@ -28,7 +28,7 @@ class m230306_133005_history_send_info extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable("{{%history_send_info}}");
+        $this->dropTable("{{%journal_send_data}}");
     }
 
     /*
@@ -40,7 +40,7 @@ class m230306_133005_history_send_info extends Migration
 
     public function down()
     {
-        echo "m230306_133005_history_send_info cannot be reverted.\n";
+        echo "m230307_073109_journal_send_data cannot be reverted.\n";
 
         return false;
     }

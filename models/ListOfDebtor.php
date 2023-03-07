@@ -33,6 +33,24 @@ class ListOfDebtor extends ActiveRecord
         1 => "Открывать"
     ];
 
+    public function attributeLabels()
+    {
+        return [
+            'id' => "ID",
+            'inom_id' => "ID Физ. лица",
+            'lastname' => "Фамилия",
+            'firstname' => "Имя",
+            'middlename' => "Отчество",
+            'phone' => "Телефон",
+            'type_user' => "Тип посетителя",
+            'status' => "Статус синхронизации",
+            'type_sync' => "Признак добавления",
+            'self_id' => "Кто добавил",
+            'open_gate' => "Открытие шлагбаума",
+            'created_at' => "Дата добавления записи"
+        ];
+    }
+
     /**
      * Сохранение отчета об открытии шлагбаума
      * @param $model
