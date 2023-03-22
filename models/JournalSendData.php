@@ -21,4 +21,5 @@ class JournalSendData extends ActiveRecord
             'state_response' => 'состояние ответа',
         ];
     }
+
 }

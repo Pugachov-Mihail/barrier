@@ -13,13 +13,14 @@ class m230306_135733_message_for_debter extends Migration
     public function safeUp()
     {
         $this->createTable(
-            '{{%message_for_debter}}',
+            '{{%message_for_debtor}}',
             [
                 'id' => $this->primaryKey(),
                 'id_inom' => $this->integer(11)->null()->defaultValue(null),
-                'phone' => $this->integer(50)->null()->defaultValue(null),
-                'type_scenary' => $this->integer(11)->null()->defaultValue(null),
-                'feedback' => $this->integer(11)->null()->defaultValue(null),
+                'phone' => $this->string(50)->null()->defaultValue(null),
+                'type_scenary' => $this->integer(11)->null()->defaultValue(null)->comment("Вид сценария"),
+                'feedback' => $this->integer(11)->null()->defaultValue(null)->comment("Вид обратной связи"),
+                'create_at' => $this->integer(11)->null()->defaultValue(null),
             ]
         );
     }
@@ -29,7 +30,7 @@ class m230306_135733_message_for_debter extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%message_for_debter}}');
+        $this->dropTable('{{%message_for_debtor}}');
     }
 
 

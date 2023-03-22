@@ -15,8 +15,8 @@ class m230306_142501_access_token extends Migration
     {
         $fields = [
             'id' => $this->primaryKey(),
-            'device_id' => $this->integer()->notNull(),
-            'token' => $this->string(32)->notNull()->unique()->comment("Сгенерированный токен"),
+            'id_device' => $this->integer()->notNull(),
+            'token' => $this->string(150)->notNull()->unique()->comment("Сгенерированный токен"),
             'created' => $this->integer()->notNull()->comment("Дата создания токена в unix-time"),
             'status'=> $this->integer(11)->null()->defaultValue(null),
             'company_id'=> $this->integer(11)->null()->defaultValue(null)->comment('Компания'),
@@ -25,7 +25,7 @@ class m230306_142501_access_token extends Migration
 
         $this->createTable($this->tableName, $fields);
         $this->addForeignKey('fk_token_has_device',
-        $this->tableName, 'device_id',
+        $this->tableName, 'id_device',
         'device', 'id');
     }
 

@@ -3,6 +3,7 @@
 namespace app\models;
 
 use yii\db\ActiveRecord;
+use yii\db\Connection;
 
 /**
  * Устройство
@@ -12,6 +13,7 @@ use yii\db\ActiveRecord;
  * @property int $ip_sluice шлюз Апи
  * @property int $login
  * @property int $password
+ * @property int $created_at
  */
 class Device extends ActiveRecord
 {
@@ -34,7 +36,7 @@ class Device extends ActiveRecord
      */
     public static function sendLoginAndPassword($login, $password)
     {
-        $url = 'http://127.0.0.1:8000/index';
+        $url = 'http://127.0.0.1:8000/login';
 
         $data = [
             'login'  => $login,
@@ -52,17 +54,36 @@ class Device extends ActiveRecord
         curl_close($ch);
 
         $token_or_error = json_decode($res);
-        return $token_or_error->token != null ? $token_or_error->token : $token_or_error ;
+
+        $result = property_exists($token_or_error, "token") ? $token_or_error->token : true;
+
+        if (is_bool($result)){
+            return true;
+        } else {
+            return self::saveLoginAndPass($login, $password, $result);
+        }
+    }
+
+    public static function authConnectionGetDataDebtor($token)
+    {
+        if(is_bool($token)){
+            return false;
+        } else {
+            $data = Device::getInfo($token);
+            if (is_bool($data)){
+                return false;
+            } else {
+                return Device::saveReceived($data, $token);
+            }
+        }
     }
 
     /** Получение всех разрешенных для проезда посетителей
      * @param $token
-     * @return string|void
+     * @return false|array
      */
     public static function getInfo($token)
     {
-        $listOfDebter = new ListOfDebtor();
-
         $url = 'http://127.0.0.1:8000/all';
 
         $headers = [
@@ -81,29 +102,132 @@ class Device extends ActiveRecord
 
         $guest = json_decode($res);
 
+        return is_array($guest) ? $guest : false;
+    }
 
-//        $listOfDebter->inom_id = $guest->inom_id != null ? $guest->inom_id : null;
-//        $listOfDebter->lastname = $guest->lastname != null ? $guest->lastname : null;
-//        $listOfDebter->firstname = $guest->firstname != null ? $guest->firstname : null;
-//        $listOfDebter->middlename = $guest->middlename != null ? $guest->middlename : null;
-//        $listOfDebter->phone = $guest->phone != null ? $guest->phone : null;
-//        $listOfDebter->type_user = $guest->type_user != null ? $guest->type_user : null;
-//        $listOfDebter->type_sync = $guest->type_sync != null ? $guest->type_sync : null;
-//        $listOfDebter->self_id = $guest->self_id != null ? $guest->self_id : null;
-//        $listOfDebter->open_gate = $guest->open_gate != null ? $guest->open_gate : null;
-//        $listOfDebter->created_at = $guest->created_at != null ? $guest->created_at : null;
-//        $listOfDebter->status = $guest->status != null ? $guest->status : null;
+    public static function saveReceived($data, $token)
+    {
+        if( $data != null){
+            foreach ($data as $values) {
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    ListOfDebtor::add($values, $token);
+                    $transaction->commit();
+                } catch (\Exception $e) {
+                    $transaction->rollBack();
+                    throw $e;
+                }
+            }
+            return $token;
+        }
+        return "Сохранено";
+    }
 
-        if( $guest != null && $listOfDebter->save()){
-            foreach ($guest->data as $value) {
-                $listOfDebter->attributes = $guest->data;
+    public function saveResult($company_id, $token)
+    {
+        $access_token = AccessToken::find()
+            ->where(['=', 'token', $token])
+            ->one();
+        $model = self::find()
+            ->where(['=', 'id', $access_token->id_device])
+            ->one();
 
+        if ($model->findCompany($company_id)){
+            $model->updateAttributes([
+               'company_id' =>  $company_id,
+            ]);
+
+            $model->insert();
+        }
+        return $model;
+    }
+
+    public static function saveDevice($login, $pass, $token)
+    {
+        $model = new self();
+
+        $model->login = $login;
+        $model->password = $pass;
+        $model->created_at = time();
+
+        if ($model->save()){
+            return $model->saveAuthToken($token);
+        } else {
+            return false;
+        }
+    }
+
+    public static function saveLoginAndPass($login, $pass, $token)
+    {
+        if (!empty($login) && !empty($pass)) {
+            $findLogin = self::findDevice($login);
+            if (is_object($findLogin)){
+                if ($findLogin->checkPassword($pass)){
+                    if (!self::findAccessToken($token)){
+                        return $token;
+                    } else {
+                        $findLogin->saveAuthToken($token);
+                        return $token;
+                    }
+                } else {
+                    $findLogin->updateAttributes([
+                        'password' => $pass,
+                    ]);
+                    return $token;
+                }
+            } else {
+                self::saveDevice($login, $pass, $token);
+                return $token;
             }
         } else {
-            return "none";
+            return false;
         }
-
     }
 
 
+    public static function findDevice($login)
+    {
+        return self::find()
+            ->where(['=', 'login', $login])
+            ->one();
+    }
+
+    private function checkPassword($password)
+    {
+        return $password == $this->password;
+    }
+
+    public function saveAuthToken($token)
+    {
+        if (self::findAccessToken($token)){
+            $access_token = new AccessToken();
+
+            $access_token->token = $token;
+            $access_token->created_at = $access_token->created = time();
+            $access_token->id_device = $this->id;
+
+            if ($access_token->save()){
+                return $access_token;
+            } else {
+                return false;
+            }
+        } return $token;
+    }
+
+    public static function findAccessToken($token)
+    {
+        $model = AccessToken::find()
+            ->where(['=', 'token', $token])
+            ->all();
+        return !(count($model) >= 1);
+    }
+
+    public function findCompany($company_id)
+    {
+        $model = self::find()->where(['=', 'company_id', $company_id])->all();
+        if (count($model) >= 1){
+            return false;
+        }
+        return true;
+    }
 }

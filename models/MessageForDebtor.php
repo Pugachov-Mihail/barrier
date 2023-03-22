@@ -3,6 +3,7 @@
 namespace app\models;
 
 use yii\db\ActiveRecord;
+use yii\db\Exception;
 
 /**
  * Сообщения для должника
@@ -11,8 +12,9 @@ use yii\db\ActiveRecord;
  * @property int $phone номер телефона должника
  * @property int $type_scenary тип сценария
  * @property int $feedback обратная связь
+ * @property int $create_at время создания
  */
-class MessageForDebter extends ActiveRecord
+class MessageForDebtor extends ActiveRecord
 {
 
 }

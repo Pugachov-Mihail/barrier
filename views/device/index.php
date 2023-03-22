@@ -2,68 +2,103 @@
 /** @var $device */
 /** @var $journal */
 
+$a = Yii::$app->request->get('pages');
 use yii\widgets\DetailView;
 
 ?>
-<div class="row">
-    <h3>Характеристики устройства</h3>
+
+
+
+<div class="container">
+    <div class="row">
+        <?php if(Yii::$app->session->hasFlash('danger')): ?>
+            <div class="alert text-danger box-danger-bg" role="alert">
+            </div>
+        <?php endif; ?>
+
+        <?php if(Yii::$app->session->hasFlash('success')): ?>
+            <div class="alert text-success box-success-bg" role="alert">
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="row">
+        <h3>Характеристики устройства</h3>
+    </div>
 </div>
 
-<div class="body-content">
-<div class="row">
-    <h4>Информация об оборудовании</h4>
-    <div class="col-lg-5">
-        <?= DetailView::widget([
-                'model' => $device,
-                'attributes' =>[
+<div class="container mb-2">
+    <div class="row">
+        <div class="col-6">
+        </div>
+        <div class="col">
+            <div class="row justify-content-end">
+                <div class="col-auto">
+                    <?= \yii\helpers\Html::a("Обновить данные", ['get-debtor-list', 'pages'=>$a],
+                        ['class'=>'btn  btn-secondary'] ) ?>
+                </div>
+                <div class="col-auto">
+                    <?= \yii\helpers\Html::a("Авторизация устройства", ['authorization'],
+                        ['class'=>'btn btn-success'] ) ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm">
+            <h4>Информация об оборудовании</h4>
+            <?= DetailView::widget([
+                    'model' => $device,
+                    'attributes' =>[
+                        [
+                            'label' => 'ID Устройства',
+                            'value' => function($row){
+                                return $row->id_device ? $row->id_device : "--" ;
+                            }
+                        ],
+                        [
+                            'label' => 'Логин',
+                            'value' => function($row){
+                                return $row->login ? $row->login : "--";
+                            }
+                        ],
+                        [
+                            'label' => 'Пароль',
+                            'value' => function($row){
+                                return $row->password ? $row->password : "--";
+                            }
+                        ],
+
+                    ]
+             ]);
+            ?>
+        </div>
+
+        <div class="col-sm">
+            <h4>Информация о подключении</h4>
+            <?= DetailView::widget([
+                    'model' => $journal,
+                    'attributes' =>[
                     [
-                        'label' => 'ID Устройства',
+                        'label' => 'Последнее обновление данных с АПИ',
                         'value' => function($row){
-                            return $row->id_device;
+                            return $row->date_send;
                         }
                     ],
                     [
-                        'label' => 'Логин',
+                        'label' => 'Состояние ответа',
                         'value' => function($row){
-                            return $row->login;
-                        }
-                    ],
-                    [
-                        'label' => 'Пароль',
-                        'value' => function($row){
-                            return $row->password;
+                            return $row->state_response;
                         }
                     ],
 
                 ]
-         ]);
-        ?>
+            ]);
+            ?>
+        </div>
     </div>
 </div>
-
-<div class="row">
-    <h4>Информация о подключении</h4>
-    <div class="col-lg-5">
-        <?= DetailView::widget([
-                'model' => $journal,
-                'attributes' =>[
-                [
-                    'label' => 'Последнее обновление данных с АПИ',
-                    'value' => function($row){
-                        return $row->date_send;
-                    }
-                ],
-                [
-                    'label' => 'Состояние ответа',
-                    'value' => function($row){
-                        return $row->state_response;
-                    }
-                ],
-
-            ]
-        ]);
-        ?>
-    </div>
-</div>
-</div>
-<p><?= \yii\helpers\Html::a("Авторизация устройства", ['authorization'], ['class'=>'btn btn-lg btn-success'] ) ?></p>
