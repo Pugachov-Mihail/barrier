@@ -72,6 +72,12 @@ use yii\widgets\DetailView;
                                 return $row->password ? $row->password : "--";
                             }
                         ],
+                        [
+                            'label' => 'Последнее обновление данных с АПИ',
+                            'value' => function($row){
+                                return $row->last_connection ? date('d.m.Y H:i:s',$row->last_connection) : "--";
+                            }
+                        ],
 
                     ]
              ]);

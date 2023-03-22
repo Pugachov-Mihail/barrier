@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use yii\data\ActiveDataProvider;
 use yii\db\ActiveRecord;
 use yii\db\Exception;
 use app\models\Debtor;
@@ -193,5 +194,18 @@ class ListOfDebtor extends ActiveRecord
         return false;
     }
 
+    public function dataProviderDebtorList()
+    {
+        $query = self::find();
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => [
+                'defaultOrder' => [
+                    'created_at' => SORT_DESC,
+                ],
+            ],
+        ]);
 
+        return $dataProvider;
+    }
 }

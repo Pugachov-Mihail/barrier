@@ -21,12 +21,8 @@ class AccessToken extends ActiveRecord
         return count($result) > 1 ? false : $result;
     }
 
-    public function findToken($token)
+    public static function findToken($token)
     {
-        if (!is_bool(self::findCurrentToken($token))){
-            return self::find()->where(["=", "token", $token])->one();
-        } else {
-            return false;
-        }
+        return self::find()->where(["=", "token", $token])->one();
     }
 }

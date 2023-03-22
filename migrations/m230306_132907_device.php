@@ -21,8 +21,9 @@ class m230306_132907_device extends Migration
                 'ip_sluice' => $this->string(250)->null()->defaultValue(null),
                 'login' => $this->string(50)->null()->defaultValue(null),
                 'password' => $this->string(150)->null()->defaultValue(null),
-                'created_at'=>$this->integer(11)->null()->defaultValue(null),
-                'updated_at'=>$this->integer(11)->null()->defaultValue(null),
+                'created_at' => $this->integer(11)->null()->defaultValue(null),
+                'updated_at' => $this->integer(11)->null()->defaultValue(null),
+                'last_connection' => $this->integer(11)->null()->defaultValue(null),
             ]
         );
     }

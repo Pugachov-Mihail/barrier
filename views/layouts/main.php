@@ -3,6 +3,7 @@
 /** @var yii\web\View $this */
 /** @var string $content */
 
+$pages = Yii::$app->request->get('pages');
 use app\assets\AppAsset;
 use app\widgets\Alert;
 use yii\bootstrap5\Breadcrumbs;
@@ -39,9 +40,9 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav'],
         'items' => [
-            ['label' => 'Авторизация устройства', 'url' => ['/device/authorization']],
-            ['label' => 'Характеристики устройства', 'url' => ['/device/index']],
-            ['label' => 'Contact', 'url' => ['/site/contact']],
+            ['label' => 'Авторизация устройства', 'url' => ['/device/authorization', 'pages'=>$pages]],
+            ['label' => 'Характеристики устройства', 'url' => ['/device/index', 'pages'=>$pages]],
+            ['label' => 'Списки посетителей', 'url' => ['/device/debtor-list', 'pages'=>$pages]],
             Yii::$app->user->isGuest
                 ? ['label' => 'Login', 'url' => ['/site/login']]
                 : '<li class="nav-item">'

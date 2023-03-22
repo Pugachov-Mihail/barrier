@@ -3,7 +3,6 @@
 namespace app\models;
 
 use yii\db\ActiveRecord;
-use yii\db\Connection;
 
 /**
  * Устройство
@@ -14,6 +13,7 @@ use yii\db\Connection;
  * @property int $login
  * @property int $password
  * @property int $created_at
+ * @property int $last_connection
  */
 class Device extends ActiveRecord
 {
@@ -160,17 +160,17 @@ class Device extends ActiveRecord
     public static function saveLoginAndPass($login, $pass, $token)
     {
         if (!empty($login) && !empty($pass)) {
-            $findLogin = self::findDevice($login);
-            if (is_object($findLogin)){
-                if ($findLogin->checkPassword($pass)){
+            $find_login = self::findDevice($login);
+            if (is_object($find_login)){
+                if ($find_login->checkPassword($pass)){
                     if (!self::findAccessToken($token)){
                         return $token;
                     } else {
-                        $findLogin->saveAuthToken($token);
+                        $find_login->saveAuthToken($token);
                         return $token;
                     }
                 } else {
-                    $findLogin->updateAttributes([
+                    $find_login->updateAttributes([
                         'password' => $pass,
                     ]);
                     return $token;
@@ -229,5 +229,28 @@ class Device extends ActiveRecord
             return false;
         }
         return true;
+    }
+
+    public static function deviceModelFindOnToken($token)
+    {
+        $id_device = AccessToken::findToken($token);
+
+        return self::find()
+            ->where(['=', 'id', $id_device->id_device])
+            ->one();
+    }
+
+    public static function updateLastConnection($token)
+    {
+        $model = self::deviceModelFindOnToken($token);
+
+        $model->updateAttributes([
+           'last_connection' => time()
+        ]);
+
+        if ($model->save()){
+            return $model;
+        }
+        return false;
     }
 }
