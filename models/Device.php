@@ -107,11 +107,14 @@ class Device extends ActiveRecord
 
     public static function saveReceived($data, $token)
     {
+        $list_debtor = new ListOfDebtor();
+
         if( $data != null){
             foreach ($data as $values) {
                 $transaction = \Yii::$app->db->beginTransaction();
                 try {
-                    ListOfDebtor::add($values, $token);
+                    $list_debtor->add($values, $token);
+
                     $transaction->commit();
                 } catch (\Exception $e) {
                     $transaction->rollBack();
@@ -123,6 +126,9 @@ class Device extends ActiveRecord
         return "Сохранено";
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function saveResult($company_id, $token)
     {
         $access_token = AccessToken::find()
@@ -139,7 +145,7 @@ class Device extends ActiveRecord
 
             $model->insert();
         }
-        return $model;
+        return $model != null ? $model : null;
     }
 
     public static function saveDevice($login, $pass, $token)
@@ -187,9 +193,10 @@ class Device extends ActiveRecord
 
     public static function findDevice($login)
     {
-        return self::find()
+        $model = self::find()
             ->where(['=', 'login', $login])
             ->one();
+        return $model != null ? $model : null;
     }
 
     private function checkPassword($password)
@@ -231,6 +238,10 @@ class Device extends ActiveRecord
         return true;
     }
 
+    /**
+     * @param $token
+     * @return array|ActiveRecord|null
+     */
     public static function deviceModelFindOnToken($token)
     {
         $id_device = AccessToken::findToken($token);

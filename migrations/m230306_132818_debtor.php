@@ -7,21 +7,22 @@ use yii\db\Migration;
  */
 class m230306_132818_debtor extends Migration
 {
+    private $tableName = '{{%debtor}}';
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable(
-            '{{%debtor}}',
-            [
-                'id' => $this->primaryKey(),
-                'inom_id' => $this->integer(11)->null()->defaultValue(null),
-                'debt' => $this->integer(11)->null()->defaultValue(null),
-                'date_start_debt' => $this->integer(11)->null()->defaultValue(null),
-                'credit' => $this->integer(11)->null()->defaultValue(null),
-            ]
-        );
+        $fields = [
+            'id' => $this->primaryKey(),
+            'list_debtor_id' => $this->integer(11)->null()->defaultValue(null),
+            'debt' => $this->integer(11)->null()->defaultValue(null),
+            'date_start_debt' => $this->integer(11)->null()->defaultValue(null),
+            'credit' => $this->integer(11)->null()->defaultValue(null),
+            'inom_id' => $this->integer(11)->null()->defaultValue(null),
+        ];
+
+        $this->createTable($this->tableName, $fields);
     }
 
     /**

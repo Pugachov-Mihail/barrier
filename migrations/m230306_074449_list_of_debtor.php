@@ -27,6 +27,7 @@ class m230306_074449_list_of_debtor extends Migration
                 'self_id' => $this->integer(11)->null()->defaultValue(null),
                 'open_gate' => $this->integer(11)->null()->defaultValue(null),
                 'created_at' => $this->integer(11)->null()->defaultValue(null),
+                'date_sound' => $this->integer(11)->null()->defaultValue(null)->comment("Дата, от которой сообщение услышат все"),
             ]);
     }
 

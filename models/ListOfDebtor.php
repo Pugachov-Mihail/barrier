@@ -37,6 +37,23 @@ class ListOfDebtor extends ActiveRecord
         1 => "Открывать"
     ];
 
+    public static $typeStatusAdd = [
+         0 => "Синхронизирован",
+         1 => "Данные неактуальны",
+         2 =>  "Локальные изменения не отправлены",
+         3 => "Происходит обновление",
+         4 => "Локально добавлен",
+    ];
+
+    /**
+     * Как добавлен пользователь, локально или получен с апи
+     * @var int[]
+     */
+    public static $typeAdd = [
+         0 => "Добавлен из INOM",
+         4 => "Добавлен в ручную"
+    ];
+
     public function attributeLabels()
     {
         return [
@@ -120,7 +137,7 @@ class ListOfDebtor extends ActiveRecord
      * @throws \Throwable
      * @throws Exception
      */
-    public static function add($values, $token)
+    public function add($values, $token)
     {
         $model = new self();
         $device = new Device();
@@ -134,20 +151,20 @@ class ListOfDebtor extends ActiveRecord
         $phone = property_exists($values, "phone") ? $values->phone : null;
         $company_id = property_exists($values, "company_id") ? $values->company_id : null;
 
-        Region::saveRegion($accounts);
-
         $model->self_id = property_exists($values, "self_id") ? $values->self_id : null;
         $model->type_user = property_exists($values, "type_user") ? $values->type_user : null;
         $model->phone = $phone;
         $model->open_gate = property_exists($values, "open_gate") ? $values->open_gate : null;
         $model->inom_id = $inom_id;
         $model->created_at = time();
+        $model->type_sync = 0;
 
         $device->saveResult($company_id, $token);
 
-        $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone);
-
         $insert = $model->insert();
+
+        $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone);
+        Region::saveRegion($accounts, $model->id, $inom_id);
 
         if (!$insert) {
             throw new Exception("Ошибка сохранения данных");
@@ -160,10 +177,10 @@ class ListOfDebtor extends ActiveRecord
         $debtor = new Debtor();
         $message_for_debter = new MessageForDebtor();
 
-
         if ($inom_id != null ) {
-            $debtor->inom_id = $inom_id;
-            $message_for_debter->id_inom = $inom_id;
+            $debtor->list_debtor_id = $message_for_debter->list_debtor_id = $this->id;
+            $debtor->inom_id = $message_for_debter->inom_id = $inom_id;
+
 
             if ($debtors != null || $debtors == 0) {
                 $debtor->debt = $debtors;
@@ -178,7 +195,7 @@ class ListOfDebtor extends ActiveRecord
                 $message_for_debter->phone = $phone;
                 $message_for_debter->create_at = time();
             }
-            if ($credit != null){
+            if ($credit != null || $credit == 0){
                 $debtor->credit = $credit;
             }
 
@@ -194,6 +211,34 @@ class ListOfDebtor extends ActiveRecord
         return false;
     }
 
+    public static function viewFormPhone($phone)
+    {
+        $res = preg_replace(
+            array(
+                '/[\+]?([7|8])[-|\s]?\([-|\s]?(\d{3})[-|\s]?\)[-|\s]?(\d{3})[-|\s]?(\d{2})[-|\s]?(\d{2})/',
+                '/[\+]?([7|8])[-|\s]?(\d{3})[-|\s]?(\d{3})[-|\s]?(\d{2})[-|\s]?(\d{2})/',
+                '/[\+]?([7|8])[-|\s]?\([-|\s]?(\d{4})[-|\s]?\)[-|\s]?(\d{2})[-|\s]?(\d{2})[-|\s]?(\d{2})/',
+                '/[\+]?([7|8])[-|\s]?(\d{4})[-|\s]?(\d{2})[-|\s]?(\d{2})[-|\s]?(\d{2})/',
+                '/[\+]?([7|8])[-|\s]?\([-|\s]?(\d{4})[-|\s]?\)[-|\s]?(\d{3})[-|\s]?(\d{3})/',
+                '/[\+]?([7|8])[-|\s]?(\d{4})[-|\s]?(\d{3})[-|\s]?(\d{3})/',
+            ),
+            array(
+                '+7 ($2) $3-$4-$5',
+                '+7 ($2) $3-$4-$5',
+                '+7 ($2) $3-$4-$5',
+                '+7 ($2) $3-$4-$5',
+                '+7 ($2) $3-$4',
+                '+7 ($2) $3-$4',
+            ),
+            $phone
+        );
+
+//        $res = str_replace(' ', '&nbsp', $res);
+
+        return $res != "" ? $res : $phone;
+
+    }
+
     public function dataProviderDebtorList()
     {
         $query = self::find();
@@ -201,11 +246,29 @@ class ListOfDebtor extends ActiveRecord
             'query' => $query,
             'sort' => [
                 'defaultOrder' => [
-                    'created_at' => SORT_DESC,
+                    'id' => SORT_DESC,
                 ],
             ],
         ]);
 
         return $dataProvider;
+    }
+
+    private static function findDebtor($phone)
+    {
+        $model = self::find()
+            ->where(['=', 'phone', $phone])
+            ->one();
+        $debtor = Debtor::find()
+            ->where(['=', 'id', $model->id])
+            ->one();
+
+        return !is_object($debtor) ? $debtor : null;
+    }
+
+    public function getDebtor($phone)
+    {
+        $modelDebtor = self::findDebtor($phone);
+
     }
 }
