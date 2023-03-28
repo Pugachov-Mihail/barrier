@@ -16,9 +16,9 @@ class m230307_073109_journal_send_data extends Migration
             "{{%journal_send_data}}",
             [
                 'id' => $this->primaryKey(),
-                'json_object' => $this->json()->null()->defaultValue(null),
+                'data_response' => $this->json()->null()->defaultValue(null),
                 'date_send' => $this->integer(11)->null()->defaultValue(null),
-                'state_response' => $this->boolean()->null()->defaultValue(null),
+                'response_status' => $this->boolean()->null()->defaultValue(false),
             ]
         );
     }

@@ -44,39 +44,43 @@ class Region extends ActiveRecord
         return false;
     }
 
-    private static function findRegionUser($id)
+    private static function findRegionUser()
     {
-        $model = self::find()
-            ->where(['=', 'list_debtor_id', $id])
-          //  ->andWhere(['=', 'inom_id', $inom_id])
-            ->all();
+        $model = self::find()->all();
 
         return !is_object($model) ? $model : null ;
     }
 
-
-    public static function returnRegion($id, $inom_id)
+    public static function returnRegion($inom_id)
     {
-        $regionFind = self::findRegionUser($id);
-        $regionOne = self::find()->where(['=', 'inom_id', $inom_id])->all();
-        $result = '';
+        $regionFind = self::findRegionUser();
+        $result = [];
+        $text = null;
 
         foreach ($regionFind as $values) {
-            foreach ($regionOne as $value){
-                if ($values->inom_id == $value->inom_id){
-                    if ($values->region_id != $value->region_id){
-                        $result = $values->region_id . " , " . $value->region_id;
-                    } else {
-                        if ($values->region_id != $value->region_id) {
-                            $result = $values->region_id;
-                        }
-                    }
+            if ($inom_id == $values->inom_id) {
+                if ($result == $values) {
+                    continue;
+                } else {
+                    $result [] = $values;
                 }
             }
         }
 
-        return $result;
+        foreach ($regionFind as $values) {
+            foreach ($result as $value) {
+                if ($values->region_id != $value->region_id) {
+                    $text = $values->inom_id != $value->inom_id ? $value->region_id :
+                        $values->region_id . ", " . $value->region_id;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return $text;
     }
+
 
 //if (($value->inom_id == $regionOne->inom_id)) {
 //$result = $result . " " . $value->region_id;

@@ -18,6 +18,7 @@ class m230306_132907_device extends Migration
                 'id' => $this->primaryKey(),
                 'id_device' => $this->integer(11)->null()->defaultValue(null),
                 'company_id' => $this->integer(11)->null()->defaultValue(null),
+                'company_name' => $this->string(11)->null()->defaultValue(null),
                 'ip_sluice' => $this->string(250)->null()->defaultValue(null),
                 'login' => $this->string(50)->null()->defaultValue(null),
                 'password' => $this->string(150)->null()->defaultValue(null),

@@ -9,11 +9,13 @@ use yii\db\ActiveRecord;
  * @property int $id
  * @property int $id_device id устройства
  * @property int $company_id компания
+ * @property int $company_name название компании
  * @property int $ip_sluice шлюз Апи
  * @property int $login
  * @property int $password
  * @property int $created_at
  * @property int $last_connection
+ * @property int $updated_at
  */
 class Device extends ActiveRecord
 {
@@ -34,9 +36,9 @@ class Device extends ActiveRecord
      * @param $password
      * @return mixed
      */
-    public static function sendLoginAndPassword($login, $password)
+    public function getTokenAuth($login, $password)
     {
-        $url = 'http://127.0.0.1:8000/login';
+        $url = 'http://127.0.0.2:8000/login';
 
         $data = [
             'login'  => $login,
@@ -53,8 +55,11 @@ class Device extends ActiveRecord
         $res = curl_exec($ch);
         curl_close($ch);
 
-        $token_or_error = json_decode($res);
+        if (is_bool($res)){
+            return $res;
+        }
 
+        $token_or_error = json_decode($res);
         $result = property_exists($token_or_error, "token") ? $token_or_error->token : true;
 
         if (is_bool($result)){
@@ -84,7 +89,7 @@ class Device extends ActiveRecord
      */
     public static function getInfo($token)
     {
-        $url = 'http://127.0.0.1:8000/all';
+        $url = 'http://127.0.0.2:8000/all';
 
         $headers = [
             'Content-Type: application/json',
@@ -99,6 +104,10 @@ class Device extends ActiveRecord
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $res = curl_exec($ch);
         curl_close($ch);
+
+        if(is_bool($res)){
+            return $res;
+        }
 
         $guest = json_decode($res);
 
@@ -129,7 +138,7 @@ class Device extends ActiveRecord
     /**
      * @throws \Throwable
      */
-    public function saveResult($company_id, $token)
+    public function saveResult($company_id, $token, $company_name)
     {
         $access_token = AccessToken::find()
             ->where(['=', 'token', $token])
@@ -141,6 +150,7 @@ class Device extends ActiveRecord
         if ($model->findCompany($company_id)){
             $model->updateAttributes([
                'company_id' =>  $company_id,
+                'company_name' => $company_name,
             ]);
 
             $model->insert();
@@ -240,19 +250,24 @@ class Device extends ActiveRecord
 
     /**
      * @param $token
-     * @return array|ActiveRecord|null
+     * @return array|false|ActiveRecord | bool
      */
     public static function deviceModelFindOnToken($token)
     {
         $id_device = AccessToken::findToken($token);
-
-        return self::find()
+        $model = self::find()
             ->where(['=', 'id', $id_device->id_device])
             ->one();
+
+        return $model != null ? $model : false;
     }
 
     public static function updateLastConnection($token)
     {
+        if (is_bool($token)){
+            return false;
+        }
+
         $model = self::deviceModelFindOnToken($token);
 
         $model->updateAttributes([
@@ -263,5 +278,25 @@ class Device extends ActiveRecord
             return $model;
         }
         return false;
+    }
+
+    public static function sendJournal($data)
+    {
+        $url = 'http://127.0.0.1:8000/send-data';
+
+        $ch = curl_init($url);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        $res = curl_exec($ch);
+        curl_close($ch);
+
+        $response = is_bool($res) ? false : json_decode($res);
+
+        return is_bool($response) ? false : $response->status;
     }
 }

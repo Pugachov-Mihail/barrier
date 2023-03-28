@@ -3,12 +3,14 @@
 
 use yii\grid\GridView;
 
+
 ?>
 
 <?= GridView::widget([
     'dataProvider' => $dataProvider,
     'layout' => "{pager}\n{summary}\n{items}\n{pager}",
     'columns' => [
+
         [
             'label' => "ID",
             'value' => function($row) {
@@ -36,7 +38,7 @@ use yii\grid\GridView;
         [
             'label' => "Номер участка",
             'value' => function($row) {
-                return $row->id ? \app\models\Region::returnRegion($row->id, $row->inom_id) : "--";
+                return $row->id ? \app\models\Region::returnRegion($row->inom_id) : "--";
             }
         ],
         [

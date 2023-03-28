@@ -4,10 +4,10 @@ namespace app\controllers;
 
 use app\models\AccessToken;
 use app\models\Device;
+use app\models\HistoryBarrier;
 use app\models\JournalSendData;
 use app\models\ListOfDebtor;
-use app\models\SearchDebtorList;
-use app\models\SearchListOfDebtor;
+
 use yii\web\Controller;
 
 class DeviceController extends Controller
@@ -15,15 +15,15 @@ class DeviceController extends Controller
     public function actionAuthorization()
     {
         $device = new Device();
-        if($device->load(\Yii::$app->request->post())){
+        if(\Yii::$app->request->post()){
             $post = \Yii::$app->request->post('Device');
             $login = array_key_exists('login', $post) ? $post['login'] : null;
             $password = array_key_exists('password', $post) ? $post['password'] : null;
 
-            $token = Device::sendLoginAndPassword($login, $password);
+            $token = $device->getTokenAuth($login, $password);
 
-            $conver_token = is_string($token) ? $token : $token->token;
-            Device::updateLastConnection($conver_token);
+            $conver_token = $token;
+            $device->updateLastConnection($conver_token);
 
             if (is_bool(Device::authConnectionGetDataDebtor($conver_token))){
                 \Yii::$app->getSession()->setFlash('danger', 'Ошибка авторизации устройства');
@@ -32,29 +32,33 @@ class DeviceController extends Controller
             } else {
                 \Yii::$app->getSession()->setFlash('success', 'Авторизация успешна');
 
-                return $this->redirect(['index', 'pages'=>$conver_token]);
+                return $this->redirect(['index', 'pages'=>$conver_token, 'status' => true]);
             }
         } else {
             return $this->render('authorization', ['device'=>$device]);
         }
     }
 
-    public function actionIndex($pages)
+    public function actionIndex($pages=null)
     {
-        $journal = new JournalSendData();
+        $journal = JournalSendData::getJournal();
 
-        $access_token = AccessToken::find()
-            ->where(['=', 'token', $pages])
-            ->one();
-        $device = Device::find()
-            ->where(['=', 'id', $access_token->id_device])
-            ->one();
+        if ($pages != null){
+            $device = is_bool(Device::deviceModelFindOnToken($pages)) ? new Device() : Device::deviceModelFindOnToken($pages);
 
-        return $this->render("index", [
-            'device'=>$device,
-            'journal' => $journal,
-        ]);
+            return $this->render("index", [
+                'device' => $device,
+                'journal' => $journal,
+                'status' => true
+            ]);
+
+        } else {
+            \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
+            return $this->render('index', ['status' => false]);
+        }
     }
+
+
     public function actionDebtorList($pages)
     {
         $list = new ListOfDebtor();
@@ -65,22 +69,52 @@ class DeviceController extends Controller
         ]);
     }
 
+    /**
+     * Экшен кнопки обновить данные
+     * @param $pages
+     * @return \yii\web\Response | string
+     * @throws \Exception
+     */
     public function actionGetDebtorList($pages)
     {
-        $data = Device::getInfo($pages);
+        if ($pages != null){
+            $data = Device::getInfo($pages);
+        } else {
+            $data = false;
+        }
 
         if (is_bool($data)){
-            \Yii::$app->getSession()->setFlash('danger', 'Ошибка олучения данных');
-            return $this->render('index');
+            \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
 
+            $device = Device::deviceModelFindOnToken($pages);
+
+            return $this->render('index', ['device'=>$device, 'status' => false]);
         } else {
             Device::saveReceived($data, $pages);
             $device = Device::updateLastConnection($pages);
 
             \Yii::$app->getSession()->setFlash('success', 'Данные получены');
+
             return $this->redirect(['index',
                 'pages' => $pages,
-                'device' => $device]);
+                'device' => $device,
+                'status' => true
+            ]);
         }
+    }
+
+    public function actionSendJournal()
+    {
+        $data = HistoryBarrier::sendHistoryJournal();
+        $sendStatus = Device::sendJournal($data);
+
+        if (is_bool($sendStatus)){
+                //Запуск питоновского скрипта который опять запросит данный экшен
+        } else {
+            JournalSendData::sendHistory($data);
+            HistoryBarrier::saveNewSendInInom();
+        }
+
+        return $sendStatus;
     }
 }

@@ -88,21 +88,6 @@ class ListOfDebtor extends ActiveRecord
         }
     }
 
-    /**
-     * Сохранение отчета о не открытии шлагбаума
-     * @param $model
-     * @return bool
-     */
-    public function saveDontOpenGate($model)
-    {
-        $model->open_gate = 0;
-        $model->created_at = time();
-        if($model->save()){
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     /**
      * Проверка номера на корректность, если номер соответствует условию то возвращает false
@@ -120,20 +105,22 @@ class ListOfDebtor extends ActiveRecord
     }
 
     /**
+     * Поиск номера телефона в списке посетителей
      * @param $number
      * @return array|ActiveRecord|null
      */
-    public static function findUser($number)
+    public static function findNumber($number)
     {
         if(!self::validateNumber($number)){
             return self::find()
-                ->where(['=', 'number' => $number])
+                ->where(['=', 'phone', $number])
                 ->one();
         }
         return null;
     }
 
     /**
+     * Сохранение полученных данных от апи Ином
      * @throws \Throwable
      * @throws Exception
      */
@@ -150,6 +137,7 @@ class ListOfDebtor extends ActiveRecord
         $credit = property_exists($values, "credit") ? $values->credit : null;
         $phone = property_exists($values, "phone") ? $values->phone : null;
         $company_id = property_exists($values, "company_id") ? $values->company_id : null;
+        $company_name = property_exists($values, "company_name") ? $values->company_name : null;
 
         $model->self_id = property_exists($values, "self_id") ? $values->self_id : null;
         $model->type_user = property_exists($values, "type_user") ? $values->type_user : null;
@@ -159,11 +147,11 @@ class ListOfDebtor extends ActiveRecord
         $model->created_at = time();
         $model->type_sync = 0;
 
-        $device->saveResult($company_id, $token);
+        $device->saveResult($company_id, $token, $company_name);
 
         $insert = $model->insert();
 
-        $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone);
+        $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
         Region::saveRegion($accounts, $model->id, $inom_id);
 
         if (!$insert) {
@@ -171,8 +159,19 @@ class ListOfDebtor extends ActiveRecord
         }
     }
 
-
-    private function saveDebtor($inom_id, $debtors, $type_pattern, $type_action, $credit, $phone)
+    /**
+     * Сохранение списка с долгами посетителей
+     * @param $inom_id
+     * @param $debtors
+     * @param $type_pattern
+     * @param $type_action
+     * @param $credit
+     * @param $phone
+     * @return bool
+     * @throws Exception
+     * @throws \Throwable
+     */
+    private function saveDebtor($inom_id, $debtors, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name)
     {
         $debtor = new Debtor();
         $message_for_debter = new MessageForDebtor();
@@ -181,9 +180,12 @@ class ListOfDebtor extends ActiveRecord
             $debtor->list_debtor_id = $message_for_debter->list_debtor_id = $this->id;
             $debtor->inom_id = $message_for_debter->inom_id = $inom_id;
 
-
             if ($debtors != null || $debtors == 0) {
                 $debtor->debt = $debtors;
+            }
+            if ($company_id != null || $company_id == 0 && $company_name != null || $company_name == 0){
+                $message_for_debter->company_id = $company_id;
+                $message_for_debter->company_name = $company_name;
             }
             if ($type_pattern != null || $type_pattern == 0) {
                 $message_for_debter->type_scenary = $type_pattern;
@@ -211,6 +213,11 @@ class ListOfDebtor extends ActiveRecord
         return false;
     }
 
+    /**
+     * Возвращает из шаблона форматированный номер телефона
+     * @param $phone
+     * @return array|string|string[]|null
+     */
     public static function viewFormPhone($phone)
     {
         $res = preg_replace(
@@ -239,11 +246,20 @@ class ListOfDebtor extends ActiveRecord
 
     }
 
+    /**
+     * Провайдер данных для списка посетителей
+     * @return ActiveDataProvider
+     */
     public function dataProviderDebtorList()
     {
         $query = self::find();
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination' => [
+                'forcePageParam' => false,
+                'pageSizeParam' => false,
+                'pageSize' => 25
+            ],
             'sort' => [
                 'defaultOrder' => [
                     'id' => SORT_DESC,
@@ -254,21 +270,36 @@ class ListOfDebtor extends ActiveRecord
         return $dataProvider;
     }
 
-    private static function findDebtor($phone)
+    /**
+     * Поиск должника по номеру телефона
+     * @param $phone
+     * @return array|ActiveRecord|null
+     */
+    public static function findDebtor($phone)
     {
-        $model = self::find()
-            ->where(['=', 'phone', $phone])
-            ->one();
-        $debtor = Debtor::find()
-            ->where(['=', 'id', $model->id])
-            ->one();
+        $model = self::findNumber($phone);
+        if ($model != null) {
+            $debtor = Debtor::find()
+                ->where(['=', 'id', $model->id])
+                ->one();
+        }
 
         return !is_object($debtor) ? $debtor : null;
     }
 
+    /**
+     * Проверка должника, открываем ему шлагбаум или нет.
+     * Если должник возвращает true
+     * @param $phone
+     * @return bool|void
+     */
     public function getDebtor($phone)
     {
         $modelDebtor = self::findDebtor($phone);
-
+        if ($modelDebtor->debt == 0){
+            return true;
+        } else {
+            return false;
+        }
     }
 }

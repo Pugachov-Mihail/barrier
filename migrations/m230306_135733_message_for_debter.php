@@ -22,6 +22,8 @@ class m230306_135733_message_for_debter extends Migration
                 'feedback' => $this->integer(11)->null()->defaultValue(null)->comment("Вид обратной связи"),
                 'create_at' => $this->integer(11)->null()->defaultValue(null),
                 'inom_id' => $this->integer(11)->null()->defaultValue(null),
+                'company_id' => $this->integer(11)->null()->defaultValue(null),
+                'company_name' => $this->string(11)->null()->defaultValue(null)
             ]
         );
     }

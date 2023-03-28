@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\HistoryBarrier;
 use app\models\ListOfDebtor;
 use app\models\ListOfDebtors;
 use yii\web\Controller;
@@ -29,31 +30,17 @@ class BarrierController extends Controller
 
     public function actionDebtor($number)
     {
-        if($result = preg_match("/[0-9]{0,11}/", $number)){
-            if(strlen($number)==11) {
-                $query = ListOfDebtor::find();
+        if($result = preg_match("/[0-9]{0,11}/", $number)) {
+            if (strlen($number) == 11) {
+                $model = new ListOfDebtor();
 
-                $user = $query
-                    ->where('number = :number', [':number' => $number])
-                    ->one();
-                if ($user) {
-                    if ($user->debt > 0) {
-                        echo "0; 0 - всё OK" . "</br> 1; $user->sender - должен $user->debt денег";
-                        return;
-                    } else {
-                        exec("sudo -u www-data sudo python assets/rele.py");
-                        return;
-                    }
+                if ($model->getDebtor($number)) {
+                    HistoryBarrier::writeHistory($number, 1);
                 }
-            }else{
+            } else {
                 echo "Некорректный номер";
                 return;
             }
-        } else{
-            echo "Некорректный номер";
-            return;
         }
-        echo $result . "Error";
-        return;
     }
 }

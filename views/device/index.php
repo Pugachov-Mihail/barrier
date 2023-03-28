@@ -1,6 +1,7 @@
 <?php
 /** @var $device */
 /** @var $journal */
+/** @var $status */
 
 $a = Yii::$app->request->get('pages');
 use yii\widgets\DetailView;
@@ -75,10 +76,13 @@ use yii\widgets\DetailView;
                         [
                             'label' => 'Последнее обновление данных с АПИ',
                             'value' => function($row){
-                                return $row->last_connection ? date('d.m.Y H:i:s',$row->last_connection) : "--";
+                                return $row->last_connection ? date('d.m.Y H:i:s', $row->last_connection) : "--";
                             }
                         ],
-
+                        [
+                            'label' => 'Состояние ответа',
+                            'value' =>  $status ? "Данные получены" : "Ошибка получения данных"
+                        ],
                     ]
              ]);
             ?>
@@ -89,19 +93,18 @@ use yii\widgets\DetailView;
             <?= DetailView::widget([
                     'model' => $journal,
                     'attributes' =>[
-                    [
-                        'label' => 'Последнее обновление данных с АПИ',
-                        'value' => function($row){
-                            return $row->date_send;
-                        }
-                    ],
-                    [
-                        'label' => 'Состояние ответа',
-                        'value' => function($row){
-                            return $row->state_response;
-                        }
-                    ],
-
+                        [
+                            'label' => 'Дата отправки',
+                            'value' => function($row){
+                                return $row->date_send ? date('d.m.Y H:i:s', $row->date_send) : "--";
+                            }
+                        ],
+                        [
+                            'label' => 'Статус отправки',
+                            'value' => function($row){
+                                return $row->response_status ? \app\models\JournalSendData::$statusType[$row->response_status] : "--";
+                            }
+                        ],
                 ]
             ]);
             ?>
