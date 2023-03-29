@@ -62,6 +62,12 @@ use yii\widgets\DetailView;
                             }
                         ],
                         [
+                            'label' => 'Наименование компании',
+                            'value' => function($row){
+                                return $row->company_name ? $row->company_name : "--" ;
+                            }
+                        ],
+                        [
                             'label' => 'Логин',
                             'value' => function($row){
                                 return $row->login ? $row->login : "--";

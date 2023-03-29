@@ -2,13 +2,14 @@
 
 namespace app\controllers;
 
-use app\models\AccessToken;
 use app\models\Device;
 use app\models\HistoryBarrier;
 use app\models\JournalSendData;
 use app\models\ListOfDebtor;
 
+use yii\base\Exception;
 use yii\web\Controller;
+use yii\web\Response;
 
 class DeviceController extends Controller
 {
@@ -72,8 +73,8 @@ class DeviceController extends Controller
     /**
      * Экшен кнопки обновить данные
      * @param $pages
-     * @return \yii\web\Response | string
-     * @throws \Exception
+     * @return Response
+     * @throws Exception|\Exception
      */
     public function actionGetDebtorList($pages)
     {
@@ -85,10 +86,9 @@ class DeviceController extends Controller
 
         if (is_bool($data)){
             \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
-
-            $device = Device::deviceModelFindOnToken($pages);
-
-            return $this->render('index', ['device'=>$device, 'status' => false]);
+            // Написать скрипт который будет запрашивать повторно если ошибка
+//            $device = Device::deviceModelFindOnToken($pages);
+            return $this->redirect('index');
         } else {
             Device::saveReceived($data, $pages);
             $device = Device::updateLastConnection($pages);
