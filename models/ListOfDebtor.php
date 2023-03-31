@@ -138,11 +138,14 @@ class ListOfDebtor extends ActiveRecord
         $phone = property_exists($values, "phone") ? $values->phone : null;
         $company_id = property_exists($values, "company_id") ? $values->company_id : null;
         $company_name = property_exists($values, "company_name") ? $values->company_name : null;
+        $self_id = property_exists($values, "self_id") ? $values->self_id : null;
+        $type_user = property_exists($values, "type_user") ? $values->type_user : null;
+        $open_gate = property_exists($values, "open_gate") ? $values->open_gate : null;
 
-        $model->self_id = property_exists($values, "self_id") ? $values->self_id : null;
-        $model->type_user = property_exists($values, "type_user") ? $values->type_user : null;
+        $model->self_id = $self_id;
+        $model->type_user = $type_user;
         $model->phone = $phone;
-        $model->open_gate = property_exists($values, "open_gate") ? $values->open_gate : null;
+        $model->open_gate = $open_gate;
         $model->inom_id = $inom_id;
         $model->created_at = time();
         $model->type_sync = 0;
@@ -151,13 +154,69 @@ class ListOfDebtor extends ActiveRecord
 
         $insert = $model->insert();
 
-        $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
-        Region::saveRegion($accounts, $model->id, $inom_id);
+        if (self::permissionOnSave($phone, $debtor, $credit)){
+            self::deleteThisDebtor($phone);
+            $thisListOfDebtor = self::findGuestForPhone($phone);
+            Debtor::updateThisDebtor($thisListOfDebtor, $debtor, $credit);
+
+        } else {
+            $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
+        }
+
+        Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
+//        if (Region::perrmissionOnSave($thisListOfDebtor, $accounts->number, $accounts->sector)){
+//              Region::updateRegion($thisListOfDebtor, $accounts);
+//        } else {
+//            Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
+//        }
 
         if (!$insert) {
             throw new Exception("Ошибка сохранения данных");
         }
     }
+
+    public static function searchDebtor($id, $debtor, $credit)
+    {
+        if ($id != null){
+            $debtors = Debtor::findDebtor($id);
+            if ($debtors != null){
+                if ($debtors->credit == $credit || $debtors->debt == $debtor){
+                     return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private static function findGuestForPhone($phone)
+    {
+        $model = self::find()->where(['=', 'phone', $phone])->one();
+
+        return $model != null ? $model->id : null;
+    }
+
+    public static function permissionOnSave($phone, $debtor, $credit)
+    {
+        $listOfDebtor = self::findGuestForPhone($phone);
+
+        if ($listOfDebtor != null){
+            if (self::searchDebtor($listOfDebtor, $debtor, $credit)){
+                //Обновление
+                return true;
+            } else {
+                //Сохранение новой записи
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * Сохранение списка с долгами посетителей
@@ -301,5 +360,56 @@ class ListOfDebtor extends ActiveRecord
         } else {
             return false;
         }
+    }
+
+    public static function validatePhone($phone)
+    {
+        if($phone) {
+            $val = self::formPhone($phone);
+
+            if ((strlen($val)) > 12 || (strlen($val) < 11)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function formPhone($phone)
+    {
+        return preg_replace('#[^0-9]#', '', $phone);
+    }
+
+    public static function deleteThisDebtor($phone)
+    {
+        $model = self::find()->all();
+        $result = [];
+
+        foreach ($model as $value){
+            if($value->phone != $phone){
+                continue;
+            } else {
+                $result[] = $value->phone;
+                print_r($value->phone);
+            }
+        }
+
+        foreach ($result as $value){
+            $currentDebtor = self::find()
+                ->where(['=', 'phone', $value])
+                ->one();
+
+            if($currentDebtor != null){
+                $region = Region::find()->where(['=', 'list_debtor_id', $currentDebtor->id])->one();
+                $debtor = Debtor::find()->where(['=', 'list_debtor_id', $currentDebtor->id])->one();
+                $message = MessageForDebtor::find()->where(['=', 'list_debtor_id', $currentDebtor->id])->one();
+
+                Region::findOne($region->id)->delete();
+                Debtor::findOne($debtor->id)->delete();
+                MessageForDebtor::findOne($message->id)->delete();
+                self::findOne($currentDebtor->id)->delete();
+            }
+        }
+
+        return true;
     }
 }

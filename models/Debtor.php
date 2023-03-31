@@ -18,12 +18,40 @@ use yii\db\Exception;
 
 class Debtor extends ActiveRecord
 {
+    public static function findCredit($id)
+    {
+        $model = self::findDebtor($id);
+        return $model->credit;
+    }
+
     public static function findDebtor($id)
     {
         $model = self::find()
             ->where(['=', 'list_debtor_id', $id])
             ->one();
 
-        return $model->credit;
+        return $model != null ? $model : null;
+    }
+
+    public static function updateThisDebtor($id, $debtor, $credit)
+    {
+        $model = self::findDebtor($id);
+
+        if($model != null){
+            $model->updateAttributes([
+                'credit' => $credit,
+                'debt' => $debtor
+            ]);
+
+            $insert = $model->insert();
+
+            if (!$insert) {
+                throw new Exception("Ошибка сохранения данных");
+            } else {
+                return $model;
+            }
+        } else {
+            return false;
+        }
     }
 }

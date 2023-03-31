@@ -43,6 +43,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             ['label' => 'Авторизация устройства', 'url' => ['/device/authorization', 'pages'=>$pages]],
             ['label' => 'Характеристики устройства', 'url' => ['/device/index', 'pages'=>$pages]],
             ['label' => 'Списки посетителей', 'url' => ['/device/debtor-list', 'pages'=>$pages]],
+    //        ['label' => 'Добавить посетителя', 'url' => ['/device/add-new-guest', 'pages'=>$pages]],
             Yii::$app->user->isGuest
                 ? ['label' => 'Login', 'url' => ['/site/login']]
                 : '<li class="nav-item">'

@@ -32,13 +32,13 @@ use yii\grid\GridView;
         [
             'label' => "Сумма долга",
             'value' => function($row) {
-                return $row->id >= 0 ? \app\models\Debtor::findDebtor($row->id) : "--";
+                return $row->id >= 0 ? \app\models\Debtor::findCredit($row->id) : "--";
             }
         ],
         [
             'label' => "Номер участка",
             'value' => function($row) {
-                return $row->id ? \app\models\Region::returnRegion($row->inom_id) : "--";
+                return $row->inom_id != null ? \app\models\Region::returnRegion($row->inom_id) : "--";
             }
         ],
         [

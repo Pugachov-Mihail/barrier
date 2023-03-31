@@ -7,6 +7,7 @@ use app\models\HistoryBarrier;
 use app\models\JournalSendData;
 use app\models\ListOfDebtor;
 
+use app\models\Region;
 use yii\base\Exception;
 use yii\web\Controller;
 use yii\web\Response;
@@ -73,7 +74,7 @@ class DeviceController extends Controller
     /**
      * Экшен кнопки обновить данные
      * @param $pages
-     * @return Response
+     * @return Response | string
      * @throws Exception|\Exception
      */
     public function actionGetDebtorList($pages)
@@ -85,10 +86,15 @@ class DeviceController extends Controller
         }
 
         if (is_bool($data)){
+            $journal = JournalSendData::getJournal();
+            $device = is_bool(Device::deviceModelFindOnToken($pages)) ? new Device() : Device::deviceModelFindOnToken($pages);
             \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
-            // Написать скрипт который будет запрашивать повторно если ошибка
-//            $device = Device::deviceModelFindOnToken($pages);
-            return $this->redirect('index');
+
+            return $this->render('index', [
+                'device' => $device,
+                'journal' => $journal,
+                'status' => false
+            ]);
         } else {
             Device::saveReceived($data, $pages);
             $device = Device::updateLastConnection($pages);
@@ -117,4 +123,49 @@ class DeviceController extends Controller
 
         return $sendStatus;
     }
+
+    public function actionGetAll()
+    {
+        return ListOfDebtor::deleteThisDebtor("76653692667");
+    }
+
+//    public function actionAddNewGuest($pages)
+//    {
+//         $guest = new ListOfDebtor();
+//         $region = new Region();
+//         $device = is_bool(Device::deviceModelFindOnToken($pages)) ? new Device() : Device::deviceModelFindOnToken($pages);;
+//
+//         if ($guest->load(\Yii::$app->request->post()) && $region->load(\Yii::$app->request->post())){
+//             $postGuest = \Yii::$app->request->post('ListOfDebtor');
+//             $postRegion = \Yii::$app->request->post('Region');
+//
+//             $region_id = array_key_exists('region_id', $postRegion) ? $postRegion['region_id'] : null;
+//             $inom_id = Region::findInomId($region_id);
+//             $phone = array_key_exists('phone', $postGuest) ? ListOfDebtor::formPhone($postGuest['phone']) : null;
+//
+//             $guest->phone =  $phone;
+//             $guest->created_at = time();
+//             $guest->type_sync = 4;
+//             $guest->inom_id = $inom_id;
+//
+//             $region->region_id = $region_id;
+//             $region->inom_id = $inom_id;
+//
+//             if ($guest->save() && $region->save() && !ListOfDebtor::validateNumber($phone)) {
+//
+//                 return $this->redirect(['debtor-list', 'pages'=>$pages]);
+//             } else {
+//                 \Yii::$app->getSession()->setFlash('danger', 'Ошибка сохранения');
+//                 return $this->render('add-guest', [
+//                     "guest" => $guest,
+//                     "region" => $region
+//                 ]);
+//             }
+//         } else {
+//             return $this->render('add-guest', [
+//                 "guest" => $guest,
+//                 "region" => $region
+//             ]);
+//         }
+//    }
 }

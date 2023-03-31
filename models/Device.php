@@ -38,7 +38,7 @@ class Device extends ActiveRecord
      */
     public function getTokenAuth($login, $password)
     {
-        $url = 'http://127.0.0.2:8000/login';
+        $url = 'http://127.0.0.1:8000/auth';
 
         $data = [
             'login'  => $login,
@@ -89,11 +89,12 @@ class Device extends ActiveRecord
      */
     public static function getInfo($token)
     {
-        $url = 'http://127.0.0.2:8000/all';
+        $url = 'http://127.0.0.1:8000/get-all-debtor';
 
         $headers = [
             'Content-Type: application/json',
-            'Authorization: Bearer ' . $token,
+//            'Authorization: Bearer ' . $token,
+            'Authorization:' . $token,
         ];
 
         $ch = curl_init($url);
