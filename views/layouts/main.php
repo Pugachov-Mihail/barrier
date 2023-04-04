@@ -34,7 +34,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <?php
     NavBar::begin([
         'brandLabel' => 'Шлагбаум',
-        'brandUrl' => Yii::$app->homeUrl,
+        'brandUrl' => ['/device/index', 'pages'=>$pages],
         'options' => ['class' => 'navbar-expand-md navbar-dark bg-dark fixed-top']
     ]);
     echo Nav::widget([
@@ -45,11 +45,11 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             ['label' => 'Списки посетителей', 'url' => ['/device/debtor-list', 'pages'=>$pages]],
     //        ['label' => 'Добавить посетителя', 'url' => ['/device/add-new-guest', 'pages'=>$pages]],
             Yii::$app->user->isGuest
-                ? ['label' => 'Login', 'url' => ['/site/login']]
+                ? ['label' => 'Авторизация', 'url' => ['/device/login', 'pages'=>$pages]]
                 : '<li class="nav-item">'
-                    . Html::beginForm(['/site/logout'])
+                    . Html::beginForm(['/device/logout', 'pages'=>$pages])
                     . Html::submitButton(
-                        'Logout (' . Yii::$app->user->identity->username . ')',
+                        'Выйти (' . Yii::$app->user->identity->username . ')',
                         ['class' => 'nav-link btn btn-link logout']
                     )
                     . Html::endForm()

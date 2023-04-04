@@ -17,9 +17,9 @@ class m230306_132929_user_device extends Migration
             [
                 'id' => $this->primaryKey(),
                 'id_inom' => $this->integer(11)->null()->defaultValue(null),
-                'name' => $this->integer(11)->null()->defaultValue(null),
-                'password' => $this->integer(50)->null()->defaultValue(null),
-                'password_reset' => $this->integer(50)->null()->defaultValue(null),
+                'name' => $this->string(11)->null()->defaultValue(null),
+                'password' => $this->string(50)->null()->defaultValue(null),
+                'password_reset' => $this->string(50)->null()->defaultValue(null),
                 'create_at' => $this->integer(11)->null()->defaultValue(null),
                 'update_at' => $this->integer(11)->null()->defaultValue(null),
             ]

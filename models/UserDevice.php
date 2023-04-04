@@ -17,5 +17,36 @@ use yii\db\ActiveRecord;
  */
 class UserDevice extends ActiveRecord
 {
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'name' => 'Логин',
+            'password' => 'Пароль',
+        ];
+    }
 
+    public static function findByUsername($name)
+    {
+        $model = self::find()->where(['=', 'name', $name])->one();
+
+        return $model != null ? $model : null;
+    }
+
+
+
+    public function validatePassword($password)
+    {
+        return $this->password === $password;
+    }
+
+    public function login()
+    {
+        $model = self::find()
+            ->where(['=', 'name', $this->name])
+            ->where(['=', 'password', $this->password])
+            ->one();
+
+        return $model != null ? true : false;
+    }
 }

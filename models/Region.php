@@ -56,7 +56,6 @@ class Region extends ActiveRecord
                 $insert = $model->insert();
             }
 
-
             if (!$insert) {
                 throw new Exception("Ошибка сохранения данных");
             } else {

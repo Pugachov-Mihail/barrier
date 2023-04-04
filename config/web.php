@@ -48,6 +48,7 @@ $config = [
             'showScriptName' => false,
             'enableStrictParsing' => false,
             'rules' => [
+                '/' => 'device/login'
             ],
         ],
     ],

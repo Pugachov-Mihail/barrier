@@ -69,16 +69,16 @@ class Device extends ActiveRecord
         }
     }
 
-    public static function authConnectionGetDataDebtor($token)
+    public function authConnectionGetDataDebtor($token)
     {
         if(is_bool($token)){
             return false;
         } else {
-            $data = Device::getInfo($token);
+            $data = self::getInfo($token);
             if (is_bool($data)){
                 return false;
             } else {
-                return Device::saveReceived($data, $token);
+                return self::saveReceived($data, $token);
             }
         }
     }
@@ -120,10 +120,14 @@ class Device extends ActiveRecord
         $list_debtor = new ListOfDebtor();
 
         if( $data != null){
-            foreach ($data as $values) {
+            foreach ($data as $key=>$values) {
                 $transaction = \Yii::$app->db->beginTransaction();
                 try {
-                    $list_debtor->add($values, $token);
+                    if ($key == array_key_first($data)){
+                        self::firstIteration($values, $token);
+                    }
+
+                    $list_debtor->add($values);
 
                     $transaction->commit();
                 } catch (\Exception $e) {
@@ -139,7 +143,7 @@ class Device extends ActiveRecord
     /**
      * @throws \Throwable
      */
-    public function saveResult($company_id, $token, $company_name)
+    public static function saveResult($company_id, $token, $company_name)
     {
         $access_token = AccessToken::find()
             ->where(['=', 'token', $token])
@@ -148,31 +152,44 @@ class Device extends ActiveRecord
             ->where(['=', 'id', $access_token->id_device])
             ->one();
 
-        if ($model->findCompany($company_id)){
+        if ($model->findCompany($company_id, $company_name)){
             $model->updateAttributes([
                'company_id' =>  $company_id,
                 'company_name' => $company_name,
             ]);
-
-            $model->insert();
         }
         return $model != null ? $model : null;
     }
 
     public static function saveDevice($login, $pass, $token)
     {
-        $model = new self();
+        if (self::findDeviceCreate($login, $pass) == null) {
+            $model = new self();
 
-        $model->login = $login;
-        $model->password = $pass;
-        $model->created_at = time();
+            $model->login = $login;
+            $model->password = $pass;
+            $model->created_at = time();
 
-        if ($model->save()){
-            return $model->saveAuthToken($token);
+            if ($model->save()) {
+                return $model->saveAuthToken($token);
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
     }
+
+    private static function findDeviceCreate($login, $pass)
+    {
+        $model = self::find()
+            ->where(['=', 'login', $login])
+            ->andWhere(['=', 'password', $pass])
+            ->one();
+
+        return $model != null ? $model : null;
+    }
+
 
     public static function saveLoginAndPass($login, $pass, $token)
     {
@@ -240,9 +257,13 @@ class Device extends ActiveRecord
         return !(count($model) >= 1);
     }
 
-    public function findCompany($company_id)
+    public function findCompany($company_id, $company_name)
     {
-        $model = self::find()->where(['=', 'company_id', $company_id])->all();
+        $model = self::find()
+            ->where(['=', 'company_id', $company_id])
+            ->andWhere(['=', 'company_name', $company_name])
+            ->all();
+
         if (count($model) >= 1){
             return false;
         }
@@ -281,13 +302,28 @@ class Device extends ActiveRecord
         return false;
     }
 
-    public static function sendJournal($data)
+    public static function findDeviceOnSend($company_id)
+    {
+        return self::find()
+            ->where(['=', 'company_id', $company_id])
+            ->orderBy('id desc')
+            ->limit(1)
+            ->one();
+    }
+
+    public static function sendJournal($data, $token)
     {
         $url = 'http://127.0.0.1:8000/send-data';
 
         $ch = curl_init($url);
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        $headers = [
+            'Content-Type: application/json',
+//            'Authorization: Bearer ' . $token,
+            'Authorization:' . $token,
+        ];
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -299,5 +335,22 @@ class Device extends ActiveRecord
         $response = is_bool($res) ? false : json_decode($res);
 
         return is_bool($response) ? false : $response->status;
+    }
+
+    public static function firstIteration($values, $token)
+    {
+        $company_id = property_exists($values, "company_id") ? $values->company_id : null;
+        $company_name = property_exists($values, "company_name") ? $values->company_name : null;
+
+        self::saveResult($company_id, $token, $company_name);
+    }
+
+    public static function findPages($pages)
+    {
+        if ($pages == null){
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -2,21 +2,107 @@
 
 namespace app\controllers;
 
+use app\models\AccessToken;
 use app\models\Device;
 use app\models\HistoryBarrier;
 use app\models\JournalSendData;
 use app\models\ListOfDebtor;
 
+use app\models\LoginForm;
 use app\models\Region;
+use app\models\User;
+use app\models\UserDevice;
 use yii\base\Exception;
+use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 use yii\web\Controller;
 use yii\web\Response;
 
 class DeviceController extends Controller
 {
+
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['logout'],
+                'rules' => [
+                    [
+                        'actions' => ['login'],
+                        'allow' => true,
+                        'roles' => ['?'],
+                    ],
+                    [
+                        'actions' => ['authorization', 'index', 'debtor-list', 'get-debtor-list', 'logout'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'logout' => ['post'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function actions()
+    {
+        return [
+            'error' => [
+                'class' => 'yii\web\ErrorAction',
+            ],
+            'captcha' => [
+                'class' => 'yii\captcha\CaptchaAction',
+                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
+            ],
+        ];
+    }
+
+    /**
+     * Авторизация пользвоателя.
+     *
+     * @return Response|string
+     */
+    public function actionLogin()
+    {
+        $model = new User();
+
+        if ($model->load(\Yii::$app->request->post())) {
+            if ($model->auth()) {
+                return $this->redirect('authorization');
+            } else {
+                \Yii::$app->getSession()->setFlash('danger', 'Ошибка авторизации');
+                return $this->render('login', ['model' => $model]);
+            }
+        }
+
+        return $this->render('login', [
+            'model' => $model,
+        ]);
+    }
+
+    /**
+     * Авторизация устройства
+     * @return string|Response
+     */
     public function actionAuthorization()
     {
+        if (\Yii::$app->user->isGuest) {
+            return $this->redirect("login");
+        }
+
         $device = new Device();
+
         if(\Yii::$app->request->post()){
             $post = \Yii::$app->request->post('Device');
             $login = array_key_exists('login', $post) ? $post['login'] : null;
@@ -27,7 +113,7 @@ class DeviceController extends Controller
             $conver_token = $token;
             $device->updateLastConnection($conver_token);
 
-            if (is_bool(Device::authConnectionGetDataDebtor($conver_token))){
+            if (is_bool($device->authConnectionGetDataDebtor($conver_token))){
                 \Yii::$app->getSession()->setFlash('danger', 'Ошибка авторизации устройства');
 
                 return $this->render('authorization', ['device'=>$device]);
@@ -41,8 +127,23 @@ class DeviceController extends Controller
         }
     }
 
+    /**
+     * Характеристики устройства
+     * @param $pages
+     * @return string|Response
+     */
     public function actionIndex($pages=null)
     {
+        if ($pages == null) {
+            return $this->redirect("authorization");
+        }
+
+        if (Device::findPages($pages)){
+            return $this->render('index', [
+                'status' => false,
+            ]);
+        }
+
         $journal = JournalSendData::getJournal();
 
         if ($pages != null){
@@ -61,12 +162,23 @@ class DeviceController extends Controller
     }
 
 
-    public function actionDebtorList($pages)
+    /**
+     * Списки посетителей
+     * @param $pages
+     * @return string|Response
+     */
+    public function actionDebtorList($pages=null)
     {
+        if ($pages == null) {
+            return $this->redirect("authorization");
+        }
+
+
         $list = new ListOfDebtor();
         $dataProvider = $list->dataProviderDebtorList();
 
         return $this->render('debtor-list', [
+            'pagesStatus' => false,
             'dataProvider' => $dataProvider,
         ]);
     }
@@ -79,6 +191,10 @@ class DeviceController extends Controller
      */
     public function actionGetDebtorList($pages)
     {
+        if (\Yii::$app->user->isGuest) {
+            return $this->redirect("authorization");
+        }
+
         if ($pages != null){
             $data = Device::getInfo($pages);
         } else {
@@ -93,9 +209,10 @@ class DeviceController extends Controller
             return $this->render('index', [
                 'device' => $device,
                 'journal' => $journal,
-                'status' => false
+                'status' => false,
             ]);
         } else {
+
             Device::saveReceived($data, $pages);
             $device = Device::updateLastConnection($pages);
 
@@ -104,15 +221,18 @@ class DeviceController extends Controller
             return $this->redirect(['index',
                 'pages' => $pages,
                 'device' => $device,
-                'status' => true
+                'status' => true,
             ]);
         }
     }
 
     public function actionSendJournal()
     {
-        $data = HistoryBarrier::sendHistoryJournal();
-        $sendStatus = Device::sendJournal($data);
+        $history = new HistoryBarrier();
+        $data = $history->collectHistoryJournal();
+
+        $token = AccessToken::findCurrentDevice($history->company_device);
+        $sendStatus = Device::sendJournal($data, $token);
 
         if (is_bool($sendStatus)){
                 //Запуск питоновского скрипта который опять запросит данный экшен
@@ -127,6 +247,17 @@ class DeviceController extends Controller
     public function actionGetAll()
     {
         return ListOfDebtor::deleteThisDebtor("76653692667");
+    }
+
+    public function actionLogout()
+    {
+        if (\Yii::$app->user->isGuest) {
+            return $this->redirect("login");
+        }
+
+        \Yii::$app->user->logout();
+
+        return $this->redirect('login');
     }
 
 //    public function actionAddNewGuest($pages)

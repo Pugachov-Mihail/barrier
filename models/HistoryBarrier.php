@@ -18,6 +18,8 @@ use yii\db\ActiveRecord;
  */
 class HistoryBarrier extends ActiveRecord
 {
+    public $company_device;
+
     public static $sendInfo = [
         0 => "Не отправлено",
         1 => "Отправлено"
@@ -37,6 +39,8 @@ class HistoryBarrier extends ActiveRecord
             $model->company_id = $message->company_id;
             $model->company_name = $message->company_name;
             $model->send_in_inom = 0;
+        } else {
+            return false;
         }
 
         if ($model->save()) {
@@ -46,7 +50,7 @@ class HistoryBarrier extends ActiveRecord
         }
     }
 
-    public static function sendHistoryJournal()
+    public function collectHistoryJournal()
     {
         $model = self::find()->all();
         $data = [];
@@ -55,6 +59,12 @@ class HistoryBarrier extends ActiveRecord
         foreach ($model as $values){
             foreach ($values as $key => $value) {
                 $arr[$key] = $value;
+
+                if ($key == array_key_first($model)){
+                    if($key == 'company_id'){
+                        $this->company_device = $value;
+                    }
+                }
 
                 if ($key == 'company_name') {
                     $data[] = $arr;

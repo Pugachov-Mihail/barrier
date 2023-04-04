@@ -25,4 +25,13 @@ class AccessToken extends ActiveRecord
     {
         return self::find()->where(["=", "token", $token])->one();
     }
+
+    public static function findCurrentDevice($company_id)
+    {
+        $device = Device::findDeviceOnSend($company_id);
+
+        $model = self::find()->where(['=', 'id', $device->id])->one();
+
+        return $model != null ? $model->token : null;
+    }
 }
