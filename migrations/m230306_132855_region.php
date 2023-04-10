@@ -17,9 +17,9 @@ class m230306_132855_region extends Migration
             [
                 'id' => $this->primaryKey(),
                 'list_debtor_id' => $this->integer(11)->null()->defaultValue(null),
-                'account_id' => $this->integer(11)->null()->defaultValue(null),
+                'account_id' => $this->string(25)->null()->defaultValue(null),
                 'company_id' => $this->integer(11)->null()->defaultValue(null),
-                'region_id' => $this->integer(11)->null()->defaultValue(null),
+                'region_id' => $this->string(11)->null()->defaultValue(null),
                 'name_region' => $this->integer(11)->null()->defaultValue(null),
                 'inom_id' => $this->integer(11)->null()->defaultValue(null),
             ]

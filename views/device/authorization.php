@@ -17,7 +17,7 @@ use yii\helpers\Html;
 
 
 <?php $form = \yii\bootstrap5\ActiveForm::begin()?>
-<h2>Авторизация устройства</h2>
+<h2>Авторизация устройства для получения списков</h2>
 <div class="row">
     <div class="col-lg-5">
     <?= $form->field($device, 'login')

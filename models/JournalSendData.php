@@ -23,7 +23,7 @@ class JournalSendData extends ActiveRecord
         if($data != null){
             $model = new self();
 
-            $model->data_response = json_encode($data);
+            $model->data_response = json_encode($data, JSON_UNESCAPED_UNICODE);
             $model->date_send = time();
             $model->response_status = true;
 

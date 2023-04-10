@@ -7,13 +7,16 @@ use yii\db\ActiveRecord;
 /**
  * Model History Barrier
  * @property int $id
- * @property int $phone номер телефона звонившего на шлагбаум
- * @property int $date_open_barrier Дата и время открытия шлагбаума
- * @property int $open_type тип открытия (въезд/выезд)
- * @property int $id_message id сообщения зачитанного звонящему
+ * @property string $device_id
+ * @property string $phone номер телефона звонившего на шлагбаум
+ * @property int $datetime Дата и время открытия шлагбаума
+ * @property int $type тип открытия (въезд/выезд)
+ * @property int $message_id id сообщения зачитанного звонящему
  * @property int $open_gate действие (открылся / не открылся)
  * @property int $send_in_inom отправлено на сервер Ином
  * @property int $company_id компания
+ * @property int $type_user
+ * @property int $inom_id
  * @property int $company_name название
  */
 class HistoryBarrier extends ActiveRecord
@@ -25,7 +28,7 @@ class HistoryBarrier extends ActiveRecord
         1 => "Отправлено"
     ];
 
-    public static function writeHistory($phone, $open_gate)
+    public static function writeFamouseHistory($phone, $open_gate)
     {
         $model = new self();
         $list_of_debtor = ListOfDebtor::findNumber($phone);
@@ -33,14 +36,48 @@ class HistoryBarrier extends ActiveRecord
 
         if($list_of_debtor != null && $message != null){
             $model->phone = $list_of_debtor->phone;
-            $model->id_message = $message->feedback;
-            $model->date_open_barrier = time();
+            $model->message_id = $message->feedback;
+            $model->type_user = $list_of_debtor->type_user;
+            $model->inom_id = $list_of_debtor->inom_id;
+            $model->datetime = time();
             $model->open_gate = $open_gate;
             $model->company_id = $message->company_id;
-            $model->company_name = $message->company_name;
             $model->send_in_inom = 0;
         } else {
             return false;
+        }
+
+        if ($model->save()) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    public static function writeUnknownPhone($phone, $open_gate)
+    {
+        $model = new self();
+        $device = Device::find()->all();
+
+        $id = '';
+
+        foreach ($device as $values){
+            foreach ($values as $key => $value){
+                if (end($device)) {
+                    if ( $key == 'company_id') {
+                        $id = $value;
+                    }
+                }
+            }
+        }
+
+        if (!ListOfDebtor::validateNumber($phone)) {
+            $model->phone = $phone;
+            $model->type_user = 3;
+            $model->datetime = time();
+            $model->open_gate = $open_gate;
+            $model->company_id = $id;
+            $model->send_in_inom = 0;
         }
 
         if ($model->save()) {
@@ -58,7 +95,11 @@ class HistoryBarrier extends ActiveRecord
 
         foreach ($model as $values){
             foreach ($values as $key => $value) {
-                $arr[$key] = $value;
+                if ($key == 'send_in_inom' || $key == 'company_name'){
+                    continue;
+                } else {
+                    $arr[$key] = $value;
+                }
 
                 if ($key == array_key_first($model)){
                     if($key == 'company_id'){
@@ -66,7 +107,7 @@ class HistoryBarrier extends ActiveRecord
                     }
                 }
 
-                if ($key == 'company_name') {
+                if ($key == 'company_id') {
                     $data[] = $arr;
                 }
             }

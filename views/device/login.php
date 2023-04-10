@@ -9,7 +9,7 @@ use yii\bootstrap5\Html;
 
 ?>
 <div class="container ">
-    <h2>Авторизация на шлагбауме</h2>
+    <h2>Авторизация в системе "шлагбаум"</h2>
 
     <?php $form = ActiveForm::begin([
         'id' => 'login-form',

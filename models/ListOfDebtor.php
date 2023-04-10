@@ -29,7 +29,8 @@ class ListOfDebtor extends ActiveRecord
     public static $typeUser = [
         0 => "Житель",
         1 => "Сотрудник",
-        2 => "Посетитель"
+        2 => "Посетитель",
+        3 => "Неизвестный"
     ];
 
     public static $openGate = [
@@ -77,9 +78,9 @@ class ListOfDebtor extends ActiveRecord
      * @param $model
      * @return bool
      */
-    public function saveOpenGate($model)
+    public function saveOpenGate($model, $open_gate)
     {
-        $model->open_gate = 1;
+        $model->open_gate = $open_gate;
         $model->created_at = time();
         if($model->save()){
             return true;
@@ -119,6 +120,19 @@ class ListOfDebtor extends ActiveRecord
         return null;
     }
 
+    public function getDebtorByPhone($number)
+    {
+        $model = self::findNumber($number);
+
+        $debt = $model != null && $model->open_gate == 1;
+
+        if ($debt){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Сохранение полученных данных от апи Ином
      * @throws \Throwable
@@ -149,20 +163,22 @@ class ListOfDebtor extends ActiveRecord
         $model->created_at = time();
         $model->type_sync = 0;
 
-        $insert = $model->insert();
-
-        if (ListOfDebtor::permissionOnSave($phone, $debtor, $credit)){
-            $list = ListOfDebtor::findGuestForPhone($phone);
-            Debtor::updateThisDebtor($list, $debtor, $credit);
+        //если запись в базе уже есть, то не сохраняем
+        if (ListOfDebtor::permissionOnSave($phone, $debtor, $credit) ){
+            return false;
         } else {
+            $insert = $model->insert();
+
             $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
+            Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
         }
-        Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
 
         if (!$insert) {
             throw new Exception("Ошибка сохранения данных");
         }
+        return false;
     }
+
 
     /**
      * Поиск долга по айди в связанной таблице Debtor
@@ -179,8 +195,9 @@ class ListOfDebtor extends ActiveRecord
             if ($debtors != null){
                 if ($debtors->credit == $credit && $debtors->debt == $debtor){
                      return true;
-                } else {
-                    return false;
+                } elseif ($debtors->credit != $credit || $debtors->debt != $debtor) {
+                    Debtor::updateThisDebtor($id, $debtor, $credit);
+                    return true;
                 }
             } else {
                 return false;
@@ -212,13 +229,14 @@ class ListOfDebtor extends ActiveRecord
     public static function permissionOnSave($phone, $debtor, $credit)
     {
         $listOfDebtor = self::findGuestForPhone($phone);
+        //Region::perrmissionOnSave($listOfDebtor, $region, $account);
 
         if ($listOfDebtor != null){
             if (self::searchDebtor($listOfDebtor, $debtor, $credit)){
-                //Обновление
+                //save
                 return true;
             } else {
-                //Сохранение новой записи
+                //
                 return false;
             }
         } else {
@@ -352,7 +370,7 @@ class ListOfDebtor extends ActiveRecord
                 ->one();
         }
 
-        return !is_object($debtor) ? $debtor : null;
+        return $debtor != null ? $debtor : null;
     }
 
     /**
@@ -364,7 +382,10 @@ class ListOfDebtor extends ActiveRecord
     public function getDebtor($phone)
     {
         $modelDebtor = self::findDebtor($phone);
-        if ($modelDebtor->debt == 0){
+
+        $debt = $modelDebtor != null && $modelDebtor->open_gate == 1;
+
+        if ($debt){
             return true;
         } else {
             return false;
@@ -413,7 +434,6 @@ class ListOfDebtor extends ActiveRecord
                 continue;
             } else {
                 $result[] = $value->phone;
-                print_r($value->phone);
             }
         }
 
@@ -437,5 +457,57 @@ class ListOfDebtor extends ActiveRecord
         }
 
         return true;
+    }
+
+    private static function findPhoneMissingFromApi($data)
+    {
+        $result = [];
+        foreach ($data as $value){
+            if (property_exists($value, "phone") || $value->phone){
+                $result[$value->id] = $value->phone;
+            }
+        }
+        return $result;
+    }
+
+
+    private static function findDifferencePhoneMissingFromDB($dataApi, $dataDB)
+    {
+        $result = [];
+        foreach ($dataDB as $key => $db){
+            if (!in_array($db, $dataApi)){
+                $result[$key] = $db;
+            }
+        }
+        return $result;
+    }
+
+
+    public static function deletePhone($data)
+    {
+        $phone = self::find()->where('phone')->all();
+
+        $phoneWithApi = ListOfDebtor::findPhoneMissingFromApi($data);
+        $phoneWithDb = ListOfDebtor::findPhoneMissingFromApi($phone);
+
+        $result = self::findDifferencePhoneMissingFromDB($phoneWithApi, $phoneWithDb);
+
+        $debtId = [];
+        $regionId = [];
+
+        foreach ($result as $key => $value){
+            if(Debtor::findDebtor($key) != null || Region::findListDebtor($key) != null) {
+                $debt = Debtor::findDebtor($key);
+                $debtId[] = $debt;
+                $regionId[] = Region::findListDebtor($key);
+            }
+            MessageForDebtor::deleteAll(['list_debtor_id' => $key]);
+            self::deleteAll(['id' => $key]);
+        }
+
+        Debtor::deleteAll(['list_debtor_id' => $debtId]);
+        Region::deleteAll(['list_debtor_id' => $regionId]);
+
+        return $result;
     }
 }

@@ -77,11 +77,16 @@ class Region extends ActiveRecord
         $model = self::findRegionUser($id);
 
         if ($model != null){
-            if($model->region_id != $region || $model->account != $account){
+            if($model->region_id == $region && $model->account_id == $account){
                 //update
                 return true;
-            } else {
-                return false;
+            } elseif ($model->region_id != $region || $model->account_id != $account) {
+                $model->updateAll([
+                    'region_id' => $region,
+                    'account_id' => $account
+                ]);
+
+                return true;
             }
         } else {
             return false;
@@ -175,4 +180,15 @@ class Region extends ActiveRecord
         }
         return $model != null ? $model->inom_id : null;
     }
+
+    public static function findListDebtor($id)
+    {
+        $model = self::find()
+            ->where(['=', 'list_debtor_id', $id])
+            ->all();
+
+        return $model != null ? $model : null;
+    }
+
+
 }

@@ -183,6 +183,7 @@ class DeviceController extends Controller
         ]);
     }
 
+
     /**
      * Экшен кнопки обновить данные
      * @param $pages
@@ -204,8 +205,8 @@ class DeviceController extends Controller
         if (is_bool($data)){
             $journal = JournalSendData::getJournal();
             $device = is_bool(Device::deviceModelFindOnToken($pages)) ? new Device() : Device::deviceModelFindOnToken($pages);
-            \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
 
+            \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
             return $this->render('index', [
                 'device' => $device,
                 'journal' => $journal,
@@ -226,6 +227,7 @@ class DeviceController extends Controller
         }
     }
 
+
     public function actionSendJournal()
     {
         $history = new HistoryBarrier();
@@ -234,7 +236,7 @@ class DeviceController extends Controller
         $token = AccessToken::findCurrentDevice($history->company_device);
         $sendStatus = Device::sendJournal($data, $token);
 
-        if (is_bool($sendStatus)){
+        if (!$sendStatus){
                 //Запуск питоновского скрипта который опять запросит данный экшен
         } else {
             JournalSendData::sendHistory($data);
@@ -244,10 +246,6 @@ class DeviceController extends Controller
         return $sendStatus;
     }
 
-    public function actionGetAll()
-    {
-        return ListOfDebtor::deleteThisDebtor("76653692667");
-    }
 
     public function actionLogout()
     {

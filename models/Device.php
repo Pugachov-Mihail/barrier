@@ -38,15 +38,16 @@ class Device extends ActiveRecord
      */
     public function getTokenAuth($login, $password)
     {
-        $url = 'http://127.0.0.1:8000/auth';
-
+        $url = "http://127.0.0.1:8000/auth";
         $data = [
             'login'  => $login,
             'password' => $password
         ];
 
+    //    $url = 'https://api.inom.online/devices/users/login?login='.$login.'&password='. $password;
+
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));//array('Content-Type: multipart/form-data'));
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -60,7 +61,14 @@ class Device extends ActiveRecord
         }
 
         $token_or_error = json_decode($res);
-        $result = property_exists($token_or_error, "token") ? $token_or_error->token : true;
+
+        if ($token_or_error->success) {
+            foreach ($token_or_error->data as $value) {
+                $result = property_exists($value, "token") ? $value->token : true;
+            }
+        } else {
+            return true;
+        }
 
         if (is_bool($result)){
             return true;
@@ -89,20 +97,19 @@ class Device extends ActiveRecord
      */
     public static function getInfo($token)
     {
-        $url = 'http://127.0.0.1:8000/get-all-debtor';
+        //$url = 'https://api.inom.online/devices/guests';
+        $url = "http://127.0.0.1:8000/get-all-debtor";
 
         $headers = [
-            'Content-Type: application/json',
-//            'Authorization: Bearer ' . $token,
+            //'Authorization: Bearer ' . $token,
             'Authorization:' . $token,
         ];
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $res = curl_exec($ch);
         curl_close($ch);
 
@@ -112,8 +119,13 @@ class Device extends ActiveRecord
 
         $guest = json_decode($res);
 
-        return is_array($guest) ? $guest : false;
+        if ($guest->success){
+            return $guest->data;
+        } else {
+            return false;
+        }
     }
+
 
     public static function saveReceived($data, $token)
     {
@@ -124,9 +136,9 @@ class Device extends ActiveRecord
                 $transaction = \Yii::$app->db->beginTransaction();
                 try {
                     if ($key == array_key_first($data)){
+                        ListOfDebtor::deletePhone($data);
                         self::firstIteration($values, $token);
                     }
-
                     $list_debtor->add($values);
 
                     $transaction->commit();
@@ -139,6 +151,7 @@ class Device extends ActiveRecord
         }
         return "Сохранено";
     }
+
 
     /**
      * @throws \Throwable
@@ -313,28 +326,37 @@ class Device extends ActiveRecord
 
     public static function sendJournal($data, $token)
     {
-        $url = 'http://127.0.0.1:8000/send-data';
+        $url = 'https://api.inom.online/devices/guests';
+       //$url = 'http://127.0.0.1:8000/send-data';
 
         $ch = curl_init($url);
 
         $headers = [
             'Content-Type: application/json',
-//            'Authorization: Bearer ' . $token,
-            'Authorization:' . $token,
+            'Authorization: Bearer ' . $token,
+           // 'Authorization: ' . $token,
         ];
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data ));//JSON_UNESCAPED_UNICODE));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_HEADER, false);
         $res = curl_exec($ch);
         curl_close($ch);
 
-        $response = is_bool($res) ? false : json_decode($res);
+        if(is_bool($res)){
+            return $res;
+        }
 
-        return is_bool($response) ? false : $response->status;
+        $response = json_decode($res);
+
+        if ($response->success){
+            return $response->success;
+        } else {
+            return false;
+        }
     }
 
     public static function firstIteration($values, $token)
