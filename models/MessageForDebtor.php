@@ -18,6 +18,10 @@ use yii\db\ActiveRecord;
  */
 class MessageForDebtor extends ActiveRecord
 {
+    /** Поиск сценария для должников
+     * @param $id
+     * @return array|ActiveRecord|null
+     */
     public static function findMessage($id)
     {
         return self::find()
@@ -25,6 +29,10 @@ class MessageForDebtor extends ActiveRecord
         ->one();
     }
 
+    /** Поиск сценария по телефону
+     * @param $number
+     * @return array|ActiveRecord|null
+     */
     private static function findMessageByPhone($number)
     {
         $model = self::find()->where(['=', 'phone', $number])->one();
@@ -32,25 +40,27 @@ class MessageForDebtor extends ActiveRecord
         return $model != null ? $model : null;
     }
 
-    private static function getMessageTypeOwner($typeAction, $debtor, $list, $regions)
+    /** Возвращает тип обратной связи для должника
+     * @param $number
+     * @return false|string|void
+     */
+    public static function getFeedbackGuest($number)
     {
-        $message = [
-            'type_action' => $typeAction->type_action,
-            'credit' => $debtor->credit
-        ];
+        $model = self::findMessageByPhone($number);
 
-        if ($typeAction->type_action == 0){
-            $message['date_sound'] = $list->date_sound;
+        if ($model != null) {
+
+            return json_encode([
+                'feedback' => $model->feedback
+            ]);
         }
-
-        $region = [];
-        foreach ($regions as $value){
-                print_r($value);
-        }
-
-        return $message;
     }
 
+    /** Возвращает json для атс, с типом сообщения должнику
+     * сумму долга, участок по условию
+     * @param $number
+     * @return false|string|void
+     */
     public static function getMessage($number)
     {
         $model = self::findMessageByPhone($number);
@@ -60,22 +70,34 @@ class MessageForDebtor extends ActiveRecord
             $list = ListOfDebtor::findNumber($number);
 
             if($list->self_id != null){
-                $region = Region::findListDebtor($model->list_debtor_id);
+                $regions = Region::findListDebtor($model->list_debtor_id);
 
-                if(is_array($region)){
-                    foreach ($region as $value){
+                if(is_array($regions)){
+                    foreach ($regions as $value){
                         if ($value->region_id){
-                            $region = $value;
+                            $region[] = $value->region_id;
                         }
                     }
                 }
+            } else {
+                $region = null;
             }
 
-            return $region;
-//            $message = [
-//                'template_id' => $model->type_pattern,
-//                'args' =>
-//            ];
+            $message = [
+                'template_id' => $model->type_scenary,
+                'credit' => $debtor->credit,
+                'action' => $model->feedback,
+            ];
+
+            if ($region != null) {
+                $message['regions'] = $region;
+            }
+            if ($model->type_scenary == 0){
+                $message['date_sound'] = $list->date_sound;
+            }
+
+
+            return json_encode($message);
         }
     }
 }

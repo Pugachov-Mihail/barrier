@@ -120,11 +120,16 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
         $password = array_key_exists("password", $post) ? $post['password'] : null;
 
         $model = $this->findLogin($login);
-        $user = self::findIdentity($model->id);
-        \Yii::$app->user->login($user);
 
-        if ($model->validatePassword($password)){
-            return true;
+        if ($model != null) {
+            $user = self::findIdentity($model->id);
+            \Yii::$app->user->login($user);
+
+            if ($model->validatePassword($password)) {
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }

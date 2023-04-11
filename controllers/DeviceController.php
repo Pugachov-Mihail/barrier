@@ -227,7 +227,9 @@ class DeviceController extends Controller
         }
     }
 
-
+    /** Экшен отправки истории посещения
+     * @return bool
+     */
     public function actionSendJournal()
     {
         $history = new HistoryBarrier();
@@ -246,7 +248,10 @@ class DeviceController extends Controller
         return $sendStatus;
     }
 
-
+    /**
+     * Экшен выхода из профиля устройства
+     * @return Response
+     */
     public function actionLogout()
     {
         if (\Yii::$app->user->isGuest) {

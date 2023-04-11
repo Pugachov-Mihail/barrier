@@ -16,37 +16,48 @@ class BarrierController extends Controller
      * @return void
      */
     public function actionOpenBarrier($message){
-        $list_of_debtor = new ListOfDebtor();
         if($message=="Ok"){
             echo "0; 0 - всё OK";
             //exec("sudo -u www-data sudo python assets/rele.py");
-            $list_of_debtor->saveOpenGate($list_of_debtor, 1);
             return;
         }else{
             echo "it";
-            $list_of_debtor->saveOpenGate($list_of_debtor, 0);
             return;
         }
     }
 
+    /** Получает номер телефона от атс и передает ей json с дальнейшими действиями
+     * @param $number
+     * @return false|string|null
+     */
     public function actionDebtor($number)
     {
         if($result = preg_match("/[0-9]/", $number)) {
             if (strlen($number) == 11) {
                 $model = new ListOfDebtor();
-                if ($model->getDebtorByPhone($number)) {
-                    HistoryBarrier::writeFamouseHistory($number, 1);
-                    return 'ok';
+                $openGate = ListOfDebtor::findNumber($number);
+
+                if(is_object($openGate)) {
+                    if ($model->getDebtorByPhone($number)) {
+                        HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
+                        return MessageForDebtor::getMessage($number);
+
+                    } else {
+                        HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
+                        return MessageForDebtor::getFeedbackGuest($number);
+                    }
                 } else {
-                    //MessageForDebtor::
                     HistoryBarrier::writeUnknownPhone($number, 0);
-                    return "Ну ты и черт";
+                    $message = ['unknown' => 'unknown phone'];
+                    return json_encode($message);
                 }
             } else {
-                echo "Некорректный номер";
+                $message = ['error' => 'error'];
+                return json_encode($message);
             }
         }
-        return "Ну ты и черт 2";
+        $message = ['error' => 'error'];
+        return json_encode($message);
     }
 
     public function actionA($number)

@@ -73,22 +73,6 @@ class ListOfDebtor extends ActiveRecord
         ];
     }
 
-    /**
-     * Сохранение отчета об открытии шлагбаума
-     * @param $model
-     * @return bool
-     */
-    public function saveOpenGate($model, $open_gate)
-    {
-        $model->open_gate = $open_gate;
-        $model->created_at = time();
-        if($model->save()){
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     /**
      * Проверка номера на корректность, если номер соответствует условию то возвращает false
@@ -124,9 +108,13 @@ class ListOfDebtor extends ActiveRecord
     {
         $model = self::findNumber($number);
 
-        $debt = $model != null && $model->open_gate == 1;
+        if($model != null) {
+            $debt = Debtor::findDebtor($model->id);
+        } else {
+            return false;
+        }
 
-        if ($debt){
+        if($debt->debt == 0){
             return true;
         } else {
             return false;
@@ -170,13 +158,14 @@ class ListOfDebtor extends ActiveRecord
             $insert = $model->insert();
 
             $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
+            Region::perrmissionOnSave($model->id, $model->id, $accounts[0]->number);
             Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
         }
 
         if (!$insert) {
             throw new Exception("Ошибка сохранения данных");
         }
-        return false;
+        return true;
     }
 
 
@@ -214,7 +203,9 @@ class ListOfDebtor extends ActiveRecord
      */
     private static function findGuestForPhone($phone)
     {
-        $model = self::find()->where(['=', 'phone', $phone])->one();
+        $model = self::find()
+            ->where(['=', 'phone', $phone])
+            ->one();
 
         return $model != null ? $model->id : null;
     }
@@ -417,72 +408,43 @@ class ListOfDebtor extends ActiveRecord
         return preg_replace('#[^0-9]#', '', $phone);
     }
 
-    /**
-     * Удаленение посетителя по номеру телефона
-     * @param $phone
-     * @return bool
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
+
+    /** Сбор номеров
+     * @param $data
+     * @return array
      */
-    public static function deleteThisDebtor($phone)
-    {
-        $model = self::find()->all();
-        $result = [];
-
-        foreach ($model as $value){
-            if($value->phone != $phone){
-                continue;
-            } else {
-                $result[] = $value->phone;
-            }
-        }
-
-        foreach ($result as $value){
-            $currentDebtor = self::find()
-                ->where(['=', 'phone', $value])
-                ->one();
-
-            if($currentDebtor != null){
-                $region = Region::find()->where(['=', 'list_debtor_id', $currentDebtor->id])->one();
-                $debtor = Debtor::find()->where(['=', 'list_debtor_id', $currentDebtor->id])->one();
-                $message = MessageForDebtor::find()->where(['=', 'list_debtor_id', $currentDebtor->id])->one();
-
-                if($region != null && !$debtor != null && $message != null){
-                    Region::findOne($region->id)->delete();
-                    Debtor::findOne($debtor->id)->delete();
-                    MessageForDebtor::findOne($message->id)->delete();
-                    self::findOne($currentDebtor->id)->delete();
-                }
-            }
-        }
-
-        return true;
-    }
-
     private static function findPhoneMissingFromApi($data)
     {
         $result = [];
         foreach ($data as $value){
             if (property_exists($value, "phone") || $value->phone){
-                $result[$value->id] = $value->phone;
+                $result[] = $value->phone;
             }
         }
         return $result;
     }
 
-
+    /** Сбор номеров которых нет в малине
+     * @param $dataApi
+     * @param $dataDB
+     * @return array
+     */
     private static function findDifferencePhoneMissingFromDB($dataApi, $dataDB)
     {
         $result = [];
         foreach ($dataDB as $key => $db){
-            if (!in_array($db, $dataApi)){
-                $result[$key] = $db;
+            $a = in_array($db, $dataApi);
+            if (!$a){
+                $result[$key+1] = $db;
             }
         }
         return $result;
     }
 
-
+    /** Удаление номеров телефонов которые есть на малине, а в списке из апи нет
+     * @param $data
+     * @return array
+     */
     public static function deletePhone($data)
     {
         $phone = self::find()->where('phone')->all();
