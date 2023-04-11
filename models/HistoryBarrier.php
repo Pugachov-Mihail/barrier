@@ -28,6 +28,11 @@ class HistoryBarrier extends ActiveRecord
         1 => "Отправлено"
     ];
 
+    /** Собирает информацию по звонящему и сохраняет в историю
+     * @param $phone
+     * @param $open_gate
+     * @return bool
+     */
     public static function writeFamouseHistory($phone, $open_gate)
     {
         $model = new self();
@@ -54,6 +59,11 @@ class HistoryBarrier extends ActiveRecord
         }
     }
 
+    /** Сохранение неизвестного номера
+     * @param $phone
+     * @param $open_gate
+     * @return bool
+     */
     public static function writeUnknownPhone($phone, $open_gate)
     {
         $model = new self();
@@ -87,6 +97,9 @@ class HistoryBarrier extends ActiveRecord
         }
     }
 
+    /** Формирует историю звонком на шлагбаум для дальнейшей отправки
+     * @return array
+     */
     public function collectHistoryJournal()
     {
         $model = self::find()->all();
@@ -116,7 +129,7 @@ class HistoryBarrier extends ActiveRecord
         return $data;
     }
 
-    /**
+    /** Сбор информции о том какие поля из таблицы не отправлялись в ином
      * @return array|ActiveRecord[]|null
      */
     private static function findDontSendHistory()
@@ -126,6 +139,11 @@ class HistoryBarrier extends ActiveRecord
         return is_array($model) ? $model : null;
     }
 
+    /** Когда данные отправлены в ином поле подтверждается
+     * @return array|false|ActiveRecord[]
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
     public static function saveNewSendInInom()
     {
         $models = self::findDontSendHistory();

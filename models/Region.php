@@ -31,6 +31,15 @@ class Region extends ActiveRecord
         ];
     }
 
+    /** Сохранение номера участка и счета посетителя
+     * @param $accounts
+     * @param $id
+     * @param $inom_id
+     * @param $company_id
+     * @return bool
+     * @throws Exception
+     * @throws \Throwable
+     */
     public static function saveRegion($accounts, $id, $inom_id, $company_id)
     {
         if ($accounts != null){
@@ -65,20 +74,27 @@ class Region extends ActiveRecord
         return false;
     }
 
-    private static function findRegionUser($id)
+    /** Поиск номеров участка по inom id
+     * @param $id
+     * @return ActiveRecord | null
+     */
+    private static function findRegionUser($id, $debtId, $account)
     {
-        $model = self::find()->where(['=', 'inom_id', $id])->all();
+        $model = self::find()
+            ->where(['=', 'inom_id', $id])
+            ->andWhere(['=', 'list_debtor_id', $debtId])
+            ->andWhere(['=', 'account_id', $account])
+            ->one();
 
-        return !is_object($model) ? $model : null ;
+        return is_object($model) ? $model : null ;
     }
 
     public static function perrmissionOnSave($id, $region, $account)
     {
-        $model = self::findRegionUser($id);
+        $model = self::findRegionUser($id, $region, $account);
 
         if ($model != null){
             if($model->region_id == $region && $model->account_id == $account){
-                //update
                 return true;
             } elseif ($model->region_id != $region || $model->account_id != $account) {
                 $model->updateAll([
@@ -92,6 +108,7 @@ class Region extends ActiveRecord
             return false;
         }
     }
+
 
     public static function updateRegion($id, $account)
     {
@@ -117,6 +134,10 @@ class Region extends ActiveRecord
         }
     }
 
+    /** Сбор в строку несколько участков для вывода на странице списки посетителей
+     * @param $inom_id
+     * @return string
+     */
     public static function returnRegion($inom_id)
     {
 
@@ -145,6 +166,12 @@ class Region extends ActiveRecord
         }
     }
 
+    /** Проверка на повторение номера
+     * @param $value
+     * @param $array
+     * @param $key
+     * @return bool
+     */
     public static function counterArrayResult($value, $array, $key)
     {
         $count = 0;
