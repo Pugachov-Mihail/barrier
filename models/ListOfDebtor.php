@@ -156,6 +156,7 @@ class ListOfDebtor extends ActiveRecord
             return false;
         } else {
             $insert = $model->insert();
+            \Yii::info("Сохранение номера: id: {$model->id}, phone: {$phone} ");
 
             $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
             Region::perrmissionOnSave($model->id, $model->id, $accounts[0]->number);
@@ -163,7 +164,7 @@ class ListOfDebtor extends ActiveRecord
         }
 
         if (!$insert) {
-            throw new Exception("Ошибка сохранения данных");
+            \Yii::warning("Ошибка сохранения данных");
         }
         return true;
     }

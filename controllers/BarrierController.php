@@ -4,7 +4,6 @@ namespace app\controllers;
 
 use app\models\HistoryBarrier;
 use app\models\ListOfDebtor;
-use app\models\ListOfDebtors;
 use app\models\MessageForDebtor;
 use yii\web\Controller;
 

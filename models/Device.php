@@ -57,6 +57,7 @@ class Device extends ActiveRecord
         curl_close($ch);
 
         if (is_bool($res)){
+            \Yii::error("Ошибка авторизации устройства");
             return $res;
         }
 
@@ -123,6 +124,7 @@ class Device extends ActiveRecord
         if ($guest->success){
             return $guest->data;
         } else {
+            \Yii::error("Ошибка получения списка посетителей из апи");
             return false;
         }
     }
@@ -154,6 +156,7 @@ class Device extends ActiveRecord
                     }
                 } catch (\Exception $e) {
                     $transaction->rollBack();
+                    \Yii::error("Ошибка сохранения данных полученных с апи");
                     throw $e;
                 }
             }
@@ -407,6 +410,7 @@ class Device extends ActiveRecord
         if ($response->success){
             return $response->success;
         } else {
+            \Yii::error("Ошибка отправки журнала посещений");
             return false;
         }
     }
@@ -437,4 +441,34 @@ class Device extends ActiveRecord
             return false;
         }
     }
+
+    public static function sendErrorLogs($data)
+    {
+        $url = 'http://127.0.0.1:8000/send-data';
+
+        $ch = curl_init($url);
+
+
+        curl_setopt($ch, CURLOPT_POST, 1);
+       // curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data ));//JSON_UNESCAPED_UNICODE));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        $res = curl_exec($ch);
+        curl_close($ch);
+
+        if(is_bool($res)){
+            return $res;
+        }
+
+        $response = json_decode($res);
+
+        if ($response->success){
+            return $response->success;
+        } else {
+            \Yii::error("Ошибка отправки логов с ошибкой");
+            return false;
+        }
+    }
+
 }

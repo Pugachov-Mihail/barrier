@@ -8,6 +8,7 @@ use app\models\HistoryBarrier;
 use app\models\JournalSendData;
 use app\models\ListOfDebtor;
 
+use app\models\Log;
 use app\models\LoginForm;
 use app\models\Region;
 use app\models\User;
@@ -248,6 +249,28 @@ class DeviceController extends Controller
         return $sendStatus;
     }
 
+    public function actionGetNewInfo()
+    {
+        $token = AccessToken::find()
+            ->orderBy('id desc')
+            ->limit(1)
+            ->one();
+
+        if ($token != null){
+            $data = Device::getInfo($token->token);
+        } else {
+            $data = false;
+        }
+        Device::saveReceived($data, $token->token);
+        $device = Device::updateLastConnection($token->token);
+
+        if(is_object($device)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Экшен выхода из профиля устройства
      * @return Response
@@ -261,6 +284,16 @@ class DeviceController extends Controller
         \Yii::$app->user->logout();
 
         return $this->redirect('login');
+    }
+
+
+    public function actionSendLogErrors()
+    {
+        $data = Log::getError();
+        foreach ($data as $value){
+            print_r($value . "<br>");
+        }
+        return Device::sendErrorLogs("das");
     }
 
 //    public function actionAddNewGuest($pages)
