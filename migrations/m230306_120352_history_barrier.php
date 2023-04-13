@@ -24,7 +24,7 @@ class m230306_120352_history_barrier extends Migration
                 'message_id' => $this->integer(11)->null()->defaultValue(null),
                 'type_user' => $this->integer(11)->null()->defaultValue(null),
                 'company_id' => $this->integer(11)->null()->defaultValue(null),
-                'company_name' => $this->string(11)->null()->defaultValue(null),
+                'company_name' => $this->string(250)->null()->defaultValue(null),
                 'send_in_inom' => $this->integer(11)->null()->defaultValue(null),
                 'type' => $this->integer(11)->null()->defaultValue(null),
             ]

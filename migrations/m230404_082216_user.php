@@ -17,7 +17,7 @@ class m230404_082216_user extends Migration
             [
                 'id' => $this->primaryKey(),
                 'username' => $this->string()->notNull()->unique(),
-                'auth_key' => $this->string(32)->null()->defaultValue(null),
+                'auth_key' => $this->string(50)->null()->defaultValue(null),
                 'password' => $this->string()->notNull(),
                 'status' => $this->smallInteger()->notNull()->defaultValue(10),
                 'created_at' => $this->integer()->null()->defaultValue(null),

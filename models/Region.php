@@ -97,7 +97,7 @@ class Region extends ActiveRecord
             if($model->region_id == $region && $model->account_id == $account){
                 return true;
             } elseif ($model->region_id != $region || $model->account_id != $account) {
-                $model->updateAll([
+                $model->updateAttributes([
                     'region_id' => $region,
                     'account_id' => $account
                 ]);
@@ -109,30 +109,15 @@ class Region extends ActiveRecord
         }
     }
 
-
-    public static function updateRegion($id, $account)
+    public static function findOneRegion($id)
     {
-        $model = self::findRegionUser($id);
+        $model = self::find()
+            ->where(['=', 'inom_id', $id])
+            ->all();
 
-        if ($model != null){
-            foreach ($account as $value){
-                $model->updateAttributes([
-                    'account_id' => $value->number,
-                    'region_id' => $value->sector
-                ]);
-            }
-
-            $insert = $model->insert();
-
-            if (!$insert) {
-                throw new Exception("Ошибка сохранения данных");
-            } else {
-                return $model;
-            }
-        } else {
-            return false;
-        }
+        return is_array($model) ? $model : null ;
     }
+
 
     /** Сбор в строку несколько участков для вывода на странице списки посетителей
      * @param $inom_id
@@ -141,7 +126,7 @@ class Region extends ActiveRecord
     public static function returnRegion($inom_id)
     {
 
-            $regionFind = self::findRegionUser($inom_id);
+            $regionFind = self::findOneRegion($inom_id);
             $result = [];
             $text = '';
 

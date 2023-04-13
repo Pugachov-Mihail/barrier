@@ -47,6 +47,7 @@ class HistoryBarrier extends ActiveRecord
             $model->datetime = time();
             $model->open_gate = $open_gate;
             $model->company_id = $message->company_id;
+            $model->company_name = $message->company_name;
             $model->send_in_inom = 0;
         } else {
             return false;
@@ -115,7 +116,7 @@ class HistoryBarrier extends ActiveRecord
                 }
 
                 if ($key == array_key_first($model)){
-                    if($key == 'company_id'){
+                    if($key == 'company_name'){
                         $this->company_device = $value;
                     }
                 }
