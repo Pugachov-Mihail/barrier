@@ -66,30 +66,30 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
     {
         return static::findOne(['username' => $username, 'status' => self::STATUS_ACTIVE]);
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getId()
-    {
-        return $this->getPrimaryKey();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAuthKey()
-    {
-        return $this->authKey;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function validateAuthKey($authKey)
-    {
-        return $this->getAuthKey() === $authKey;
-    }
+//
+//    /**
+//     * {@inheritdoc}
+//     */
+//    public function getId()
+//    {
+//        return $this->getPrimaryKey();
+//    }
+//
+//    /**
+//     * {@inheritdoc}
+//     */
+//    public function getAuthKey()
+//    {
+//        return $this->authKey;
+//    }
+//
+//    /**
+//     * {@inheritdoc}
+//     */
+//    public function validateAuthKey($authKey)
+//    {
+//        return $this->getAuthKey() === $authKey;
+//    }
 
     /**
      * Validates password
