@@ -12,7 +12,7 @@ use yii\db\ActiveRecord;
  * @property string $username
  * @property string $password_reset_token
  * @property string $email
- * @property string $auth_key
+ * @property string $authKey
  * @property integer $status
  * @property integer $created_at
  * @property integer $updated_at
@@ -66,30 +66,30 @@ class User extends ActiveRecord implements \yii\web\IdentityInterface
     {
         return static::findOne(['username' => $username, 'status' => self::STATUS_ACTIVE]);
     }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    public function getId()
-//    {
-//        return $this->getPrimaryKey();
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    public function getAuthKey()
-//    {
-//        return $this->authKey;
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    public function validateAuthKey($authKey)
-//    {
-//        return $this->getAuthKey() === $authKey;
-//    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getId()
+    {
+        return $this->getPrimaryKey();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAuthKey()
+    {
+        return $this->authKey;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateAuthKey($authKey)
+    {
+        return $this->getAuthKey() === $authKey;
+    }
 
     /**
      * Validates password
