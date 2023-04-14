@@ -45,14 +45,17 @@ $config = [
             ],
         ],
         'db' => $db,
-//        'urlManager' => [
-//            'enablePrettyUrl' => true,
-//            'showScriptName' => false,
-//            'enableStrictParsing' => false,
-//            'rules' => [
-//                '/' => 'device/login'
-//            ],
-//        ],
+        'urlManager' => [
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+            'enableStrictParsing' => false,
+            'rules' => [
+                '/' => 'device/login',
+                '/authorization' => 'device/authorization',
+                '/debtor-list' => 'device/debtor-list',
+
+            ],
+        ],
     ],
     'params' => $params,
 ];

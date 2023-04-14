@@ -140,7 +140,7 @@ class DeviceController extends Controller
         }
 
         if (Device::findPages($pages)){
-            return $this->render('index', [
+            return $this->render("index", [
                 'status' => false,
             ]);
         }
