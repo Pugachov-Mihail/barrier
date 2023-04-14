@@ -53,7 +53,7 @@ $config = [
                 '/' => 'device/login',
                 '/authorization' => 'device/authorization',
                 '/debtor-list' => 'device/debtor-list',
-
+                '/index' => 'device/index'
             ],
         ],
     ],
