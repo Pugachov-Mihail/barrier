@@ -91,21 +91,23 @@ class Region extends ActiveRecord
 
     public static function perrmissionOnSave($id, $region, $account)
     {
-        $model = self::findRegionUser($id, $region, $account);
+        foreach ($account as $value) {
+            $model = self::findRegionUser($id, $region, $value->number);
 
-        if ($model != null){
-            if($model->region_id == $region && $model->account_id == $account){
-                return true;
-            } elseif ($model->region_id != $region || $model->account_id != $account) {
-                $model->updateAttributes([
-                    'region_id' => $region,
-                    'account_id' => $account
-                ]);
+            if ($model != null) {
+                if ($model->region_id == $region && $model->account_id == $value->number) {
+                    return true;
+                } elseif ($model->region_id != $region || $model->account_id != $value->number) {
+                    $model->updateAttributes([
+                        'region_id' => $region,
+                        'account_id' => $value->number
+                    ]);
 
-                return true;
+                    return true;
+                }
+            } else {
+                return false;
             }
-        } else {
-            return false;
         }
     }
 
