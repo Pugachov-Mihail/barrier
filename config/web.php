@@ -44,12 +44,12 @@ $config = [
                 ],
             ],
         ],
+        'defaultRoute' => 'device/login',
         'db' => $db,
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => true,
             'enableStrictParsing' => false,
-            'defaultRoute' => 'device/login',
             'rules' => [
                 '/' => 'device/login',
                 '/authorization' => 'device/authorization',
