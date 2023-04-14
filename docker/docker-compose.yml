@@ -1,0 +1,33 @@
+version: '3'
+
+networks:
+  default:
+    driver: bridge
+
+services:
+  barrier:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - default
+    depends_on:
+      - db
+    volumes:
+      - "..:/var/www/barrier"
+      - "./conf/nginx/:/etc/nginx/sites-available"
+  db:
+    image: mysql:latest
+    networks:
+      - default
+    ports:
+      - "3336:3306"
+
+    environment:
+      MYSQL_ROOT_PASSWORD: POT654kds
+      MYSQL_DATABASE: barrier
+    volumes:
+      - "/database:/var/lib/mysql"
+

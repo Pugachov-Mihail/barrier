@@ -109,7 +109,7 @@ class HistoryBarrier extends ActiveRecord
 
         foreach ($model as $values){
             foreach ($values as $key => $value) {
-                if ($key == 'send_in_inom' || $key == 'type'){
+                if ($key == 'send_in_inom' || $key == 'type' || $key == 'company_name'){
                     continue;
                 } else {
                     $arr[$key] = $value;

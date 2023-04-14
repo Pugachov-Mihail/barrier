@@ -47,14 +47,15 @@ $config = [
         'defaultRoute' => 'device/login',
         'db' => $db,
         'urlManager' => [
-            'enablePrettyUrl' => true,
+            'enablePrettyUrl' => false,
             'showScriptName' => false,
-            'enableStrictParsing' => true,
+            'enableStrictParsing' => false,
+
             'rules' => [
-                '/' => 'device/login',
-                '/authorization' => 'device/authorization',
-                '/debtor-list' => 'device/debtor-list',
-                '/index' => 'device/index'
+//                '/' => 'device/login',
+//                '/authorization' => 'device/authorization',
+//                '/debtor-list' => 'device/debtor-list',
+//                '/index' => 'device/index'
             ],
         ],
     ],
