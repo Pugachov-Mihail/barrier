@@ -80,14 +80,14 @@ class DeviceController extends Controller
 
         if ($model->load(\Yii::$app->request->post())) {
             if ($model->auth()) {
-                return $this->redirect('authorization');
+                return $this->redirect('device/authorization');
             } else {
                 \Yii::$app->getSession()->setFlash('danger', 'Ошибка авторизации');
-                return $this->render('login', ['model' => $model]);
+                return $this->render('device/login', ['model' => $model]);
             }
         }
 
-        return $this->render('login', [
+        return $this->render('device/login', [
             'model' => $model,
         ]);
     }
@@ -99,7 +99,7 @@ class DeviceController extends Controller
     public function actionAuthorization()
     {
         if (\Yii::$app->user->isGuest) {
-            return $this->redirect("login");
+            return $this->redirect("device/login");
         }
 
         $device = new Device();
@@ -117,14 +117,14 @@ class DeviceController extends Controller
             if (is_bool($device->authConnectionGetDataDebtor($conver_token))){
                 \Yii::$app->getSession()->setFlash('danger', 'Ошибка авторизации устройства');
 
-                return $this->render('authorization', ['device'=>$device]);
+                return $this->render('device/authorization', ['device'=>$device]);
             } else {
                 \Yii::$app->getSession()->setFlash('success', 'Авторизация успешна');
 
-                return $this->redirect(['index', 'pages'=>$conver_token, 'status' => true]);
+                return $this->redirect(['device/index', 'pages'=>$conver_token, 'status' => true]);
             }
         } else {
-            return $this->render('authorization', ['device'=>$device]);
+            return $this->render('device/authorization', ['device'=>$device]);
         }
     }
 
@@ -136,11 +136,11 @@ class DeviceController extends Controller
     public function actionIndex($pages=null)
     {
         if ($pages == null) {
-            return $this->redirect("authorization");
+            return $this->redirect("device/authorization");
         }
 
         if (Device::findPages($pages)){
-            return $this->render("index", [
+            return $this->render('device/index', [
                 'status' => false,
             ]);
         }
@@ -150,7 +150,7 @@ class DeviceController extends Controller
         if ($pages != null){
             $device = is_bool(Device::deviceModelFindOnToken($pages)) ? new Device() : Device::deviceModelFindOnToken($pages);
 
-            return $this->render("index", [
+            return $this->render("device/index", [
                 'device' => $device,
                 'journal' => $journal,
                 'status' => true
@@ -158,7 +158,7 @@ class DeviceController extends Controller
 
         } else {
             \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
-            return $this->render('index', ['status' => false]);
+            return $this->render('device/index', ['status' => false]);
         }
     }
 
@@ -171,14 +171,14 @@ class DeviceController extends Controller
     public function actionDebtorList($pages=null)
     {
         if ($pages == null) {
-            return $this->redirect("authorization");
+            return $this->redirect("device/authorization");
         }
 
 
         $list = new ListOfDebtor();
         $dataProvider = $list->dataProviderDebtorList();
 
-        return $this->render('debtor-list', [
+        return $this->render('device/debtor-list', [
             'pagesStatus' => false,
             'dataProvider' => $dataProvider,
         ]);
@@ -194,7 +194,7 @@ class DeviceController extends Controller
     public function actionGetDebtorList($pages)
     {
         if (\Yii::$app->user->isGuest) {
-            return $this->redirect("authorization");
+            return $this->redirect("device/authorization");
         }
 
         if ($pages != null){
@@ -208,7 +208,7 @@ class DeviceController extends Controller
             $device = is_bool(Device::deviceModelFindOnToken($pages)) ? new Device() : Device::deviceModelFindOnToken($pages);
 
             \Yii::$app->getSession()->setFlash('danger', 'Ошибка получения данных');
-            return $this->render('index', [
+            return $this->render('device/index', [
                 'device' => $device,
                 'journal' => $journal,
                 'status' => false,
@@ -220,7 +220,7 @@ class DeviceController extends Controller
 
             \Yii::$app->getSession()->setFlash('success', 'Данные получены');
 
-            return $this->redirect(['index',
+            return $this->redirect(['device/index',
                 'pages' => $pages,
                 'device' => $device,
                 'status' => true,
@@ -278,12 +278,12 @@ class DeviceController extends Controller
     public function actionLogout()
     {
         if (\Yii::$app->user->isGuest) {
-            return $this->redirect("login");
+            return $this->redirect("device/login");
         }
 
         \Yii::$app->user->logout();
 
-        return $this->redirect('login');
+        return $this->redirect('device/login');
     }
 
 
