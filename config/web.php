@@ -8,6 +8,7 @@ $config = [
     'language' => 'ru-RU',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'timeZone' => 'UTC',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -44,14 +45,14 @@ $config = [
             ],
         ],
         'db' => $db,
-        'urlManager' => [
-            'enablePrettyUrl' => true,
-            'showScriptName' => false,
-            'enableStrictParsing' => false,
-            'rules' => [
-                '/' => 'device/login'
-            ],
-        ],
+//        'urlManager' => [
+//            'enablePrettyUrl' => true,
+//            'showScriptName' => false,
+//            'enableStrictParsing' => false,
+//            'rules' => [
+//                '/' => 'device/login'
+//            ],
+//        ],
     ],
     'params' => $params,
 ];

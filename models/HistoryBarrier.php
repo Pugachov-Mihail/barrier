@@ -103,20 +103,20 @@ class HistoryBarrier extends ActiveRecord
      */
     public function collectHistoryJournal()
     {
-        $model = self::find()->all();
+        $model = self::find()->where(["<>", "send_in_inom", 1])->all();
         $data = [];
         $arr = [];
 
         foreach ($model as $values){
             foreach ($values as $key => $value) {
-                if ($key == 'send_in_inom' || $key == 'company_name'){
+                if ($key == 'send_in_inom' || $key == 'type'){
                     continue;
                 } else {
                     $arr[$key] = $value;
                 }
 
                 if ($key == array_key_first($model)){
-                    if($key == 'company_name'){
+                    if($key == 'company_id'){
                         $this->company_device = $value;
                     }
                 }

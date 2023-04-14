@@ -39,10 +39,10 @@ class Device extends ActiveRecord
     public function getTokenAuth($login, $password)
     {
        // $url = "http://127.0.0.1:8000/auth";
-        $data = [
-            'login'  => $login,
-            'password' => $password
-        ];
+//        $data = [
+//            'login'  => $login,
+//            'password' => $password
+//        ];
 
        $url = 'https://api.inom.online/devices/users/login?login='.$login.'&password='. $password;
 
@@ -368,7 +368,6 @@ class Device extends ActiveRecord
     public static function findDeviceOnSend($company_id)
     {
         return self::find()
-            ->where(['=', 'company_id', $company_id])
             ->orderBy('id desc')
             ->limit(1)
             ->one();
@@ -381,38 +380,43 @@ class Device extends ActiveRecord
      */
     public static function sendJournal($data, $token)
     {
-        $url = 'https://api.inom.online/devices/guests';
-       //$url = 'http://127.0.0.1:8000/send-data';
+       if (!empty($data)){
+           $url = 'https://api.inom.online/devices/guests';
+           //$url = 'http://127.0.0.1:8000/dasddassdasadfdsfggfgfd';
 
-        $ch = curl_init($url);
+           $ch = curl_init($url);
 
-        $headers = [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $token,
-           // 'Authorization: ' . $token,
-        ];
+           $headers = [
+               'Content-Type:multipart/form-data',
+               'Authorization: Bearer ' . $token,
+               // 'Authorization: ' . $token,
+           ];
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data ));//JSON_UNESCAPED_UNICODE));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        $res = curl_exec($ch);
-        curl_close($ch);
+           curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+           curl_setopt($ch, CURLOPT_POST, 1);
+           curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+           curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+           curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+           curl_setopt($ch, CURLOPT_HEADER, false);
 
-        if(is_bool($res)){
-            return $res;
-        }
+           $res = curl_exec($ch);
+           curl_close($ch);
 
-        $response = json_decode($res);
+           if(is_bool($res)){
+               return $res;
+           }
 
-        if ($response->success){
-            return $response->success;
-        } else {
-            \Yii::error("Ошибка отправки журнала посещений");
-            return false;
-        }
+           $response = json_decode($res);
+
+           if ($response->success){
+               return $response->success;
+           } else {
+               \Yii::error("Ошибка отправки журнала посещений");
+               return false;
+           }
+       } else {
+           return false;
+       }
     }
 
     /** Сохранение для устройства компании при получении данных от ином
