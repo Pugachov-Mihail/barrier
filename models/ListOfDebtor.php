@@ -159,7 +159,7 @@ class ListOfDebtor extends ActiveRecord
             \Yii::info("Сохранение номера: id: {$model->id}, phone: {$phone} ");
 
             $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
-            Region::perrmissionOnSave($model->id, $model->id, $accounts[0]->number);
+            Region::perrmissionOnSave($model->id, $model->id, $accounts->number);
             Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
         }
 
