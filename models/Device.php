@@ -387,7 +387,7 @@ class Device extends ActiveRecord
            $ch = curl_init($url);
 
            $headers = [
-               'Content-Type:multipart/form-data',
+               'Content-Type: multipart/form-data',
                'Authorization: Bearer ' . $token,
                // 'Authorization: ' . $token,
            ];
