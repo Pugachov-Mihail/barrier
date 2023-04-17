@@ -162,7 +162,7 @@ class Region extends ActiveRecord
     public static function counterArrayResult($value, $array, $key)
     {
         $count = 0;
-        if ($array[$key] != null){
+        if (array_key_exists($key, $array)){
             sort($array[$key]);
             foreach ($array[$key] as $values){
                 if ($values == $value){
