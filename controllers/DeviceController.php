@@ -124,7 +124,8 @@ class DeviceController extends Controller
                 return $this->redirect(['index', 'pages'=>$conver_token, 'status' => true]);
             }
         } else {
-            return $this->render('authorization', ['device'=>$device]);
+            return $this->render('authorization', ['device'=>$device,
+                'pages' => $pages != null ? $pages : null]);
         }
     }
 

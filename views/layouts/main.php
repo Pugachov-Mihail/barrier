@@ -40,9 +40,9 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav'],
         'items' => [
-            ['label' => 'Характеристики устройства', 'url' => ['/device/index', 'pages'=>$pages]],
-            ['label' => 'Списки посетителей', 'url' => ['/device/debtor-list', 'pages'=>$pages]],
-            ['label' => 'Авторизация устройства', 'url' => ['/device/authorization', 'pages'=>$pages]],
+            ['label' => 'Характеристики устройства', 'url' => ['/device/index', 'pages' => $pages]],
+            ['label' => 'Списки посетителей', 'url' => ['/device/debtor-list', 'pages' => $pages]],
+            ['label' => 'Авторизация устройства', 'url' => ['/device/authorization', 'pages' => $pages]],
     //        ['label' => 'Добавить посетителя', 'url' => ['/device/add-new-guest', 'pages'=>$pages]],
             Yii::$app->user->isGuest
                 ? ['label' => 'Авторизация', 'url' => ['/device/login', 'pages'=>$pages]]
