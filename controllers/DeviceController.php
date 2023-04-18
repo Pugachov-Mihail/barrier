@@ -291,10 +291,7 @@ class DeviceController extends Controller
     public function actionSendLogErrors()
     {
         $data = Log::getError();
-        foreach ($data as $value){
-            print_r($value . "<br>");
-        }
-        return Device::sendErrorLogs("das");
+        return $data;
     }
 
 //    public function actionAddNewGuest($pages)

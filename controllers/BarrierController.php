@@ -56,10 +56,4 @@ class BarrierController extends Controller
         return json_encode($message);
     }
 
-    public function actionA($number)
-    {
-        $a = MessageForDebtor::getMessage($number);
-        print_r($a);
-        return;
-    }
 }
