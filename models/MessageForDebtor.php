@@ -68,19 +68,14 @@ class MessageForDebtor extends ActiveRecord
         if ($model != null){
             $debtor = Debtor::findDebtor($model->list_debtor_id);
             $list = ListOfDebtor::findNumber($number);
+            $regions = Region::findListDebtor($model->list_debtor_id);
 
-            if($list->self_id != null){
-                $regions = Region::findListDebtor($model->list_debtor_id);
-
-                if(is_array($regions)){
-                    foreach ($regions as $value){
-                        if ($value->region_id){
-                            $region[] = $value->region_id;
-                        }
+            if(is_array($regions)){
+                foreach ($regions as $value){
+                    if ($value->region_id){
+                        $region[] = $value->region_id;
                     }
                 }
-            } else {
-                $region = null;
             }
 
             $message = [

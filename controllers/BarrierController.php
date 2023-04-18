@@ -9,19 +9,16 @@ use yii\web\Controller;
 
 class BarrierController extends Controller
 {
-    /**
-     * Экшен открытия шлагбаума
+    /** Экшен открытия шлагбаума
      * @param $message
-     * @return void
+     * @return false|string
      */
     public function actionOpenBarrier($message){
-        if($message=="Ok"){
-            echo "0; 0 - всё OK";
+        if($message=="OK"){
             //exec("sudo -u www-data sudo python assets/rele.py");
-            return;
+            return json_encode(['status' => "Все ОК"]);
         }else{
-            echo "it";
-            return;
+            return json_encode(['status' => "error"]);
         }
     }
 
