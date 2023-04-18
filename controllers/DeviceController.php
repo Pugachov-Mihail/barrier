@@ -96,7 +96,7 @@ class DeviceController extends Controller
      * Авторизация устройства
      * @return string|Response
      */
-    public function actionAuthorization()
+    public function actionAuthorization($pages=null)
     {
         if (\Yii::$app->user->isGuest) {
             return $this->redirect("login");
