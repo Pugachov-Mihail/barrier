@@ -42,6 +42,10 @@ use yii\widgets\DetailView;
                     <?= \yii\helpers\Html::a("Авторизация устройства", ['authorization'],
                         ['class'=>'btn btn-success'] ) ?>
                 </div>
+                <div class="col-auto">
+                    <?= \yii\helpers\Html::a("Отправить данные в ИНОМ", ['send-journal'],
+                        ['class'=>'btn btn-success'] ) ?>
+                </div>
             </div>
         </div>
     </div>

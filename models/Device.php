@@ -387,7 +387,6 @@ class Device extends ActiveRecord
            $url = 'https://api.inom.online/devices/guests';
            //$url = 'http://127.0.0.1:8000/dasddassdasadfdsfggfgfd';
 
-           $ch = curl_init($url);
 
            $headers = [
                'Content-Type: multipart/form-data',
@@ -395,12 +394,13 @@ class Device extends ActiveRecord
                // 'Authorization: ' . $token,
            ];
 
+           $ch = curl_init($url);
            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
            curl_setopt($ch, CURLOPT_POST, 1);
            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
            curl_setopt($ch, CURLOPT_HEADER, false);
-           curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-           curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+           curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+           curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
            $res = curl_exec($ch);
            curl_close($ch);
