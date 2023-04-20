@@ -34,4 +34,31 @@ class Log extends ActiveRecord
 
         return $data;
     }
+
+    private static function findAllHistory($logTime)
+    {
+        if ($logTime != null) {
+           return self::find()->where(['>=', 'log_time', $logTime])->all();
+        } else {
+            return self::find()->all();
+        }
+    }
+
+    public static function getAllHistory($logTime=null)
+    {
+        $models = self::findAllHistory($logTime);
+        $current = [];
+        $data = [];
+
+        foreach ($models as $values){
+           foreach ($values as $key => $value){
+               $current[$key] = $value;
+
+               if ($key == "message"){
+                   $data[] = $current;
+               }
+           }
+        }
+        return $data;
+    }
 }

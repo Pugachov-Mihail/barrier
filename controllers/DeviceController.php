@@ -288,11 +288,12 @@ class DeviceController extends Controller
     }
 
 
-    public function actionSendLogErrors()
+    public function actionSendLogHistory($logTime=null)
     {
-        $data = Log::getError();
-        return $data;
+        $data = Log::getAllHistory($logTime);
+        return json_encode($data);
     }
+
 
 //    public function actionAddNewGuest($pages)
 //    {
