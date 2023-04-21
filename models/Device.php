@@ -452,7 +452,7 @@ class Device extends ActiveRecord
 
     public static function sendErrorLogs($message)
     {
-        $url = 'http://127.0.0.1:8000/send-data';
+        $url = 'https://25f6-89-22-55-100.ngrok-free.app/aa';
 
         $ch = curl_init($url);
 
