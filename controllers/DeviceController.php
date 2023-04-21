@@ -241,7 +241,7 @@ class DeviceController extends Controller
         $sendStatus = Device::sendJournal($data, $token);
 
         if (!$sendStatus){
-                //Запуск питоновского скрипта который опять запросит данный экшен
+            Device::sendErrorLogs("Ошибка отправки журнала");
             return $this->actionSendJournal();
         } else {
             JournalSendData::sendHistory($data);
