@@ -389,7 +389,7 @@ class Device extends ActiveRecord
 
 
            $headers = [
-               'Content-Type: multipart/form-data',
+               'Content-Type: application/json',
                'Authorization: Bearer ' . $token,
                // 'Authorization: ' . $token,
            ];
@@ -398,9 +398,9 @@ class Device extends ActiveRecord
            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
            curl_setopt($ch, CURLOPT_POST, 1);
            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-           curl_setopt($ch, CURLOPT_HEADER, false);
+           curl_setopt($ch, CURLOPT_HEADER, true);
            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-           curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+           curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
            $res = curl_exec($ch);
            curl_close($ch);
