@@ -461,6 +461,8 @@ class Device extends ActiveRecord
             'message' => $message,
         ];
 
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data, JSON_UNESCAPED_UNICODE));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -480,7 +482,7 @@ class Device extends ActiveRecord
 
         \Yii::error("Ошибка отправки логов");
 //        self::sendErrorLogs("Ошибка отправки логов с ошибкой");
-        return $response;
+        return true;
 //        if ($response->success){
 //            return $response->success;
 //        } else {
