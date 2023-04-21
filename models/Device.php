@@ -457,6 +457,7 @@ class Device extends ActiveRecord
         $ch = curl_init($url);
 
         $data = [
+            'date-time' => date("Y-m-d H:i:s"),
             'message' => $message,
         ];
 

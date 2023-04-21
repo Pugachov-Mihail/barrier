@@ -242,7 +242,7 @@ class DeviceController extends Controller
 
         if (!$sendStatus){
                 //Запуск питоновского скрипта который опять запросит данный экшен
-            return "false";
+            return $this->actionSendJournal();
         } else {
             JournalSendData::sendHistory($data);
             HistoryBarrier::saveNewSendInInom();
@@ -294,7 +294,6 @@ class DeviceController extends Controller
         $data = Log::getAllHistory($logTime);
         return json_encode($data);
     }
-
 
 //    public function actionAddNewGuest($pages)
 //    {
