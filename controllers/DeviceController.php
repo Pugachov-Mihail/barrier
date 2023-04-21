@@ -242,6 +242,7 @@ class DeviceController extends Controller
 
         if (!$sendStatus){
                 //Запуск питоновского скрипта который опять запросит данный экшен
+            return false;
         } else {
             JournalSendData::sendHistory($data);
             HistoryBarrier::saveNewSendInInom();
