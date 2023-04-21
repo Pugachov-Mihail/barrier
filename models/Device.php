@@ -455,8 +455,13 @@ class Device extends ActiveRecord
         $url = 'https://25f6-89-22-55-100.ngrok-free.app/aa';
 
         $ch = curl_init($url);
+        $device = Device::find()
+            ->orderBy('id desc')
+            ->limit(1)
+            ->one();
 
         $data = [
+            "id_device" => $device->company_id,
             'date-time' => date("Y-m-d H:i:s"),
             'message' => $message,
         ];
