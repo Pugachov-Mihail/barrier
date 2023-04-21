@@ -474,7 +474,10 @@ class Device extends ActiveRecord
         }
 
         $response = json_decode($res);
-        print_r($response);
+        foreach ($response as $value){
+            print_r($value);
+        }
+
         \Yii::error("Ошибка отправки логов");
 //        self::sendErrorLogs("Ошибка отправки логов с ошибкой");
         return $response;
