@@ -480,14 +480,12 @@ class Device extends ActiveRecord
             print_r($value);
         }
 
-        \Yii::error("Ошибка отправки логов");
-//        self::sendErrorLogs("Ошибка отправки логов с ошибкой");
-        return true;
-//        if ($response->success){
-//            return $response->success;
-//        } else {
-//
-//        }
+        if ($response->success){
+            return $response->success;
+        } else {
+             \Yii::error("Ошибка отправки логов");
+             return false;
+        }
     }
 
 }
