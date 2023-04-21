@@ -476,9 +476,7 @@ class Device extends ActiveRecord
         }
 
         $response = json_decode($res);
-        foreach ($response as $value){
-            print_r($value);
-        }
+
 
         if ($response->success){
             return $response->success;
