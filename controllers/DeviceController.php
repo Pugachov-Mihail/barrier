@@ -291,8 +291,17 @@ class DeviceController extends Controller
 
     public function actionSendLogHistory($logTime=null)
     {
+        $device = Device::find()
+            ->orderBy('id desc')
+            ->limit(1)
+            ->one();
         $data = Log::getAllHistory($logTime);
-        return json_encode($data);
+
+        $log = [
+            "id_device"=>$device->company_id,
+            "message" => $data
+        ];
+        return json_encode($log);
     }
 
 //    public function actionAddNewGuest($pages)
