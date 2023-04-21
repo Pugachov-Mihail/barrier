@@ -242,7 +242,7 @@ class DeviceController extends Controller
 
         if (!$sendStatus){
             Device::sendErrorLogs("Ошибка отправки журнала");
-            return $this->actionSendJournal();
+//            return $this->actionSendJournal();
         } else {
             JournalSendData::sendHistory($data);
             HistoryBarrier::saveNewSendInInom();
