@@ -241,7 +241,7 @@ class DeviceController extends Controller
         $sendStatus = Device::sendJournal($data, $token);
 
         if (!$sendStatus){
-            Device::sendErrorLogs("Ошибка отправки журнала");
+            return Device::sendErrorLogs("Ошибка отправки журнала");
 //            return $this->actionSendJournal();
         } else {
             JournalSendData::sendHistory($data);
