@@ -14,9 +14,11 @@ class BarrierController extends Controller
      * @return false|string
      */
     public function actionOpenBarrier($message){
-        if($message=="OK"){
+        if($message=="OPEN_GATE"){
             //exec("sudo -u www-data sudo python assets/rele.py");
             return json_encode(['status' => "Все ОК"]);
+        } elseif ($message=="DONT_OPEN"){
+            return json_encode(['status' => "dont_open"]);
         }else{
             return json_encode(['status' => "error"]);
         }
