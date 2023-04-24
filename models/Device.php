@@ -462,7 +462,7 @@ class Device extends ActiveRecord
 
         $data = [
             "id_device" => $device->company_id,
-            'date-time' => date("Y-m-d H:i:s"),
+            'date_time' => date("Y-m-d H:i:s"),
             'message' => $message,
         ];
 
