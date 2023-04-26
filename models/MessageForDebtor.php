@@ -56,6 +56,34 @@ class MessageForDebtor extends ActiveRecord
         }
     }
 
+    private static function getRegion($msg)
+    {
+        $value = $msg;
+        if (preg_match('/\//', $msg)){
+            $value = preg_replace('/\//', ' дробь ' , $msg );
+        }
+        if (preg_match('/-/', $msg)){
+            $value = preg_replace('/-/', ' дефис ', $msg);
+        }
+        if (preg_match('/\,/', $msg)){
+            $value = preg_replace('/\,/', '', $msg);
+        }
+        if (preg_match('/\./', $msg)){
+            $value = preg_replace('/\./', ' точка ', $msg);
+        }
+
+        return $value;
+    }
+
+    private static function findSpace($msg)
+    {
+        $value = $msg;
+        if (preg_match('/\s/', $msg)){
+            $value = preg_replace('/\s/', ' пробел ', $msg);
+        }
+        return $value;
+    }
+
     /** Возвращает json для атс, с типом сообщения должнику
      * сумму долга, участок по условию
      * @param $number
@@ -73,7 +101,7 @@ class MessageForDebtor extends ActiveRecord
             if(is_array($regions)){
                 foreach ($regions as $value){
                     if ($value->region_id){
-                        $region[] = $value->region_id;
+                        $region[] =self::getRegion(self::findSpace($value->region_id));
                     }
                 }
             }
@@ -92,7 +120,7 @@ class MessageForDebtor extends ActiveRecord
             }
 
 
-            return json_encode($message);
+            return json_encode($message, JSON_UNESCAPED_UNICODE);
         }
     }
 }
