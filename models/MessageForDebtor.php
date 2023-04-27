@@ -117,7 +117,7 @@ class MessageForDebtor extends ActiveRecord
             'template_id' => $model->type_scenary,
         ];
 
-        if ($region != null && $model->type_scenary > 3 && $model->type_scenary < 7) {
+        if ($region != null && $model->type_scenary > 3 || $model->type_scenary == 8) {
             $message['regions'] = implode(" пробел ", $region);
             $message['credit'] = $debtor->credit;
         } else {
@@ -127,8 +127,9 @@ class MessageForDebtor extends ActiveRecord
         if ($model->type_scenary == 0){
             $message['date_sound'] = date("d m Y", $list->date_sound);
         }
-
-        $message['action'] = $model->feedback;
+        if ($model->type_scenary > 7) {
+            $message['action'] = $model->feedback;
+        }
 
         return json_encode($message, JSON_UNESCAPED_UNICODE);
     }
