@@ -117,7 +117,7 @@ class MessageForDebtor extends ActiveRecord
             'template_id' => $model->type_scenary,
         ];
 
-        if ($region != null && $model->type_scenary > 3 && $model->type_scenary < 6) {
+        if ($region != null && $model->type_scenary > 3 && $model->type_scenary < 7) {
             $message['regions'] = implode(" пробел ", $region);
             $message['credit'] = $debtor->credit;
         } else {
