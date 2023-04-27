@@ -125,7 +125,7 @@ class MessageForDebtor extends ActiveRecord
         }
 
         if ($model->type_scenary == 0){
-            $message['date_sound'] = date("F j Y", $list->date_sound);
+            $message['date_sound'] = date("d m Y", $list->date_sound);
         }
 
         $message['action'] = $model->feedback;
