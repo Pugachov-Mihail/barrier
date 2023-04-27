@@ -114,7 +114,7 @@ class ListOfDebtor extends ActiveRecord
             return false;
         }
 
-        if($debt->debt == 0){
+        if($model->open_gate == 1){
             return true;
         } else {
             return false;
