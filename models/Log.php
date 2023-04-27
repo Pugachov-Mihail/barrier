@@ -40,7 +40,10 @@ class Log extends ActiveRecord
         if ($logTime != null) {
            return self::find()->where(['>=', 'log_time', $logTime])->all();
         } else {
-            return self::find()->all();
+            return self::find()
+                ->limit(250)
+                ->orderBy(['id' => SORT_DESC])
+                ->all();
         }
     }
 

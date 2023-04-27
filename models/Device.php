@@ -452,7 +452,7 @@ class Device extends ActiveRecord
 
     public static function sendErrorLogs($message)
     {
-        $url = 'https://taskusers.ru:6598/set-error-api';
+        $url = 'https://45.141.79.103:6598/set-error-api';
 
         $ch = curl_init($url);
         $device = Device::find()

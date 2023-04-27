@@ -101,27 +101,36 @@ class MessageForDebtor extends ActiveRecord
             if(is_array($regions)){
                 foreach ($regions as $value){
                     if ($value->region_id){
-                        $region[] =self::getRegion(self::findSpace($value->region_id));
+                        $region[] = self::getRegion(self::findSpace($value->region_id));
                     }
                 }
             }
 
-            $message = [
-                'template_id' => $model->type_scenary,
-                'credit' => $debtor->credit,
-                'action' => $model->feedback,
-            ];
-
-            if ($region != null) {
-                $message['regions'] = $region;
-            }
-            if ($model->type_scenary == 0){
-                $message['date_sound'] = $list->date_sound;
-            }
-
-
-            return json_encode($message, JSON_UNESCAPED_UNICODE);
+            return self::getMessageForGuest($model, $debtor, $region, $list);
         }
+    }
+
+    private static function getMessageForGuest($model, $debtor, $region, $list)
+    {
+
+        $message = [
+            'template_id' => $model->type_scenary,
+        ];
+
+        if ($region != null && $model->type_scenary > 3) {
+            $message['regions'] = implode(" пробел ", $region);
+            $message['credit'] = $debtor->credit;
+        } else {
+            $message['credit'] = $debtor->credit;
+        }
+
+        if ($model->type_scenary == 0){
+            $message['date_sound'] = $list->date_sound;
+        }
+
+        $message['action'] = $model->feedback;
+
+        return json_encode($message, JSON_UNESCAPED_UNICODE);
     }
 }
 //337/ЮЗ лин
