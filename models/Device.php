@@ -143,19 +143,14 @@ class Device extends ActiveRecord
         $list_debtor = new ListOfDebtor();
 
         if( $data != null){
+            $transaction = \Yii::$app->db->beginTransaction();
             foreach ($data as $key=>$values) {
-                $transaction = \Yii::$app->db->beginTransaction();
                 try {
                     if ($key == array_key_first($data)){
                         ListOfDebtor::deletePhone($data);
                         self::firstIteration($values, $token);
-                        $transaction->commit();
                     }
-                    if ($list_debtor->add($values)){
-                        $transaction->commit();
-                    } else {
-                        continue;
-                    }
+                    $list_debtor->add($values);
                 } catch (\Exception $e) {
                     $transaction->rollBack();
                     \Yii::error("Ошибка сохранения данных");
@@ -163,6 +158,7 @@ class Device extends ActiveRecord
                     throw $e;
                 }
             }
+            $transaction->commit();
             return $token;
         }
         return "Сохранено";
@@ -461,9 +457,9 @@ class Device extends ActiveRecord
             ->one();
 
         $data = [
-            "id_device" => $device->company_id,
             'date_time' => date("Y-m-d H:i:s"),
             'message' => $message,
+            "id_device" => $device->company_id,
         ];
 
 

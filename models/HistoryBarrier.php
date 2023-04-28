@@ -45,7 +45,7 @@ class HistoryBarrier extends ActiveRecord
             $model->type_user = $list_of_debtor->type_user;
             $model->inom_id = $list_of_debtor->inom_id;
             $model->datetime = time();
-            $model->open_gate = $open_gate;
+            $model->open_gate = $open_gate != null ? $open_gate : 1;
             $model->company_id = $message->company_id;
             $model->company_name = $message->company_name;
             $model->send_in_inom = 0;

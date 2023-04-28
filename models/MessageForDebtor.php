@@ -106,7 +106,12 @@ class MessageForDebtor extends ActiveRecord
                 }
             }
 
-            return self::getMessageForGuest($model, $debtor, $region, $list);
+            if ($model->type_scenary == null || $list->type_user == 1){
+                exec("sudo -u www-data sudo python assets/relay_on_1.py");
+                return json_encode(["action"=>2]);
+            } else {
+                return self::getMessageForGuest($model, $debtor, $region, $list);
+            }
         }
     }
 
@@ -128,17 +133,18 @@ class MessageForDebtor extends ActiveRecord
             $message['date_sound'] = date("Y-m-d", $list->date_sound);
         }
         if ($model->type_scenary < 7) {
-            $message['action'] = $model->feedback;
+            $message['action'] = $model->feedback != null ? $model->feedback : 0;
         }
 
         return json_encode($message, JSON_UNESCAPED_UNICODE);
     }
+
+    public static function findCompanyName($id)
+    {
+        $model = self::find()
+            ->where(['=', 'list_debtor_id', $id])
+            ->one();
+
+        return $model != null ? $model->company_name : "--";
+    }
 }
-//337/ЮЗ лин
-//261 1/2(261 пробел 1/2)
-//219а
-//176/1
-//166, 167
-//138/ИГ
-// 134-2
-//107а/ИГ

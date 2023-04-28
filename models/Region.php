@@ -89,7 +89,7 @@ class Region extends ActiveRecord
         return is_object($model) ? $model : null ;
     }
 
-    public static function perrmissionOnSave($id, $region, $account)
+    public static function perrmissionOnSave($id, $account)
     {
         foreach ($account as $value) {
             $model = self::findRegionUser($id, $id, $value->number);

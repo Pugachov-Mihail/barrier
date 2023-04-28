@@ -36,17 +36,17 @@ class BarrierController extends Controller
                 $openGate = ListOfDebtor::findNumber($number);
 
                 if(is_object($openGate)) {
-                    if ($model->findStaff($number)){
-                        HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
-                        exec("sudo -u www-data sudo python assets/relay_on_1.py");
-                        return json_encode(["feedback"=>null]);
-                    }
+//                    if ($model->findStaff($number)){
+//                        HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
+//                        exec("sudo -u www-data sudo python assets/relay_on_1.py");
+//                        return json_encode(["feedback"=>null]);
+//                    }
                     if ($model->getDebtorByPhone($number)) {
                         HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
                         return MessageForDebtor::getMessage($number);
                     } else {
                         HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
-                        return MessageForDebtor::getFeedbackGuest($number);
+                        return MessageForDebtor::getMessage($number);
                     }
                 } else {
                     HistoryBarrier::writeUnknownPhone($number, 0);

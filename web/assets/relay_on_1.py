@@ -7,7 +7,7 @@ import time
 DELAY_TIME = 4
 
 config = configparser.RawConfigParser()            #воспользуемся конфигом
-config.read("/var/www/html/barrier/web/assets/global_config.conf")         #считаем конфиг
+config.read("/var/www/barrier/web/assets/global_config.conf")         #считаем конфиг
 pin_number_1 = config.getint("relay_pins", "relay1") #пина из конфига присвоем переменной pin_number
 
 print ("ON pin:"+str(pin_number_1)+"\n")

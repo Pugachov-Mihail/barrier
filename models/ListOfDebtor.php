@@ -22,6 +22,7 @@ use yii\db\Exception;
  * @property int $self_id родительский идентификатор физ.лица
  * @property int $open_gate открытие шлагбаума
  * @property int $created_at дата добавления записи
+ * @property int $date_sound
  */
 class ListOfDebtor extends ActiveRecord
 {
@@ -123,9 +124,11 @@ class ListOfDebtor extends ActiveRecord
     public function getDebtorByPhone($number)
     {
         $model = self::findNumber($number);
+        $debtor = Debtor::findDebtor($model->id);
 
-        if($model != null) {
-            if($model->open_gate == 1){
+
+        if($debtor != null) {
+            if($debtor->debt == 1){
                 return true;
             } else {
                 return false;
@@ -156,6 +159,7 @@ class ListOfDebtor extends ActiveRecord
         $self_id = property_exists($values, "self_id") ? $values->self_id : null;
         $type_user = property_exists($values, "type_user") ? $values->type_user : null;
         $open_gate = property_exists($values, "open_gate") ? $values->open_gate : null;
+        $date_sound = property_exists($values, "date_sound") ? $values->date_sound : null;
 
         $model->self_id = $self_id;
         $model->type_user = $type_user;
@@ -164,23 +168,25 @@ class ListOfDebtor extends ActiveRecord
         $model->inom_id = $inom_id;
         $model->created_at = time();
         $model->type_sync = 0;
+        $model->date_sound = $date_sound;
 
-        //если запись в базе уже есть, то не сохраняем
-        if (ListOfDebtor::permissionOnSave($phone, $debtor, $credit) ){
-            return false;
-        } else {
+        Region::perrmissionOnSave($inom_id, $accounts);
+
+       // если запись в базе уже есть, то не сохраняем
+
+        if (ListOfDebtor::permissionOnSave($phone, $debtor, $credit, $open_gate, $date_sound) ){
             $insert = $model->insert();
-            \Yii::info("Сохранение номера: id: {$model->id}, phone: {$phone} ");
 
-            $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
-            Region::perrmissionOnSave($inom_id, $model->id, $accounts);
-            Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
+            if (!$insert) {
+                \Yii::warning("Ошибка сохранения данных");
+            } else {
+                Region::saveRegion($accounts, $model->id, $inom_id, $company_id);
+                $model->saveDebtor($inom_id, $debtor, $type_pattern, $type_action, $credit, $phone, $company_id, $company_name);
+                return true;
+            }
+        } else {
+            return false;
         }
-
-        if (!$insert) {
-            \Yii::warning("Ошибка сохранения данных");
-        }
-        return true;
     }
 
 
@@ -193,21 +199,17 @@ class ListOfDebtor extends ActiveRecord
      */
     public static function searchDebtor($id, $debtor, $credit)
     {
-        if ($id != null){
-            $debtors = Debtor::findDebtor($id);
+        $debtors = Debtor::findDebtor($id);
 
-            if ($debtors != null){
-                if ($debtors->credit == $credit && $debtors->debt == $debtor){
-                     return true;
-                } elseif ($debtors->credit != $credit || $debtors->debt != $debtor) {
-                    Debtor::updateThisDebtor($id, $debtor, $credit);
-                    return true;
-                }
-            } else {
+        if ($debtors != null){
+            if ($debtors->credit == $credit && $debtors->debt == $debtor){
+                return false;
+            } elseif ($debtors->credit != $credit || $debtors->debt != $debtor) {
+                Debtor::updateThisDebtor($id, $debtor, $credit);
                 return false;
             }
         } else {
-            return false;
+            return true;
         }
     }
 
@@ -222,7 +224,7 @@ class ListOfDebtor extends ActiveRecord
             ->where(['=', 'phone', $phone])
             ->one();
 
-        return $model != null ? $model->id : null;
+        return $model != null ? $model : null;
     }
 
     /**
@@ -232,21 +234,27 @@ class ListOfDebtor extends ActiveRecord
      * @param $credit
      * @return bool
      */
-    public static function permissionOnSave($phone, $debtor, $credit)
+    public static function permissionOnSave($phone, $debtor, $credit, $open_gate, $date_sound)
     {
         $listOfDebtor = self::findGuestForPhone($phone);
+
         //Region::perrmissionOnSave($listOfDebtor, $region, $account);
 
-        if ($listOfDebtor != null){
-            if (self::searchDebtor($listOfDebtor, $debtor, $credit)){
-                //save
-                return true;
-            } else {
-                //
-                return false;
+        if ($listOfDebtor != null) {
+            self::searchDebtor($listOfDebtor->id, $debtor, $credit);
+            if($listOfDebtor->open_gate != $open_gate || $listOfDebtor->date_sound != $date_sound){
+                $listOfDebtor->updateAttributes([
+                    'open_gate'=>$open_gate,
+                    'date_sound'=>$date_sound
+                ]);
             }
-        } else {
+        }
+
+        if ($listOfDebtor != null){
             return false;
+        } else {
+            //сохраняем
+            return true;
         }
     }
 
@@ -462,10 +470,10 @@ class ListOfDebtor extends ActiveRecord
      */
     public static function deletePhone($data)
     {
-        $phone = self::find()->where('phone')->all();
+//        $phone = self::find()->where('phone')->all();
 
         $phoneWithApi = ListOfDebtor::findPhoneMissingFromApi($data);
-        $phoneWithDb = ListOfDebtor::findPhoneMissingFromApi($phone);
+        $phoneWithDb = ListOfDebtor::findPhoneMissingFromApi($data);
 
         $result = self::findDifferencePhoneMissingFromDB($phoneWithApi, $phoneWithDb);
 

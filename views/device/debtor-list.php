@@ -53,5 +53,11 @@ use yii\grid\GridView;
                 return $row->type_sync >= 0 ? \app\models\ListOfDebtor::$typeStatusAdd[$row->type_sync] : "--";
             }
         ],
+        [
+            'label' => "Название компании",
+            'value' => function($row) {
+                return $row->id >= 0  ? \app\models\MessageForDebtor::findCompanyName($row->id) : "--";
+            }
+        ],
     ],
 ]); ?>
