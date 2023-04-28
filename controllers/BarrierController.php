@@ -15,7 +15,7 @@ class BarrierController extends Controller
      */
     public function actionOpenBarrier($message){
         if($message=="OPEN_GATE"){
-            //exec("sudo -u www-data sudo python assets/rele.py");
+            exec("sudo -u www-data sudo python assets/relay_on_1.py");
             return json_encode(['status' => "Все ОК"], JSON_UNESCAPED_UNICODE);
         } elseif ($message=="DONT_OPEN"){
             return json_encode(['status' => "dont_open"], JSON_UNESCAPED_UNICODE);
@@ -36,10 +36,14 @@ class BarrierController extends Controller
                 $openGate = ListOfDebtor::findNumber($number);
 
                 if(is_object($openGate)) {
+                    if ($model->findStaff($number)){
+                        HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
+                        exec("sudo -u www-data sudo python assets/relay_on_1.py");
+                        return json_encode(["feedback"=>null]);
+                    }
                     if ($model->getDebtorByPhone($number)) {
                         HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
                         return MessageForDebtor::getMessage($number);
-
                     } else {
                         HistoryBarrier::writeFamouseHistory($number, $openGate->open_gate);
                         return MessageForDebtor::getFeedbackGuest($number);

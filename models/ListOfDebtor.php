@@ -5,8 +5,7 @@ namespace app\models;
 use yii\data\ActiveDataProvider;
 use yii\db\ActiveRecord;
 use yii\db\Exception;
-use app\models\Debtor;
-use app\models\MessageForDebtor;
+
 
 /**
  * Model List of debtor
@@ -104,18 +103,33 @@ class ListOfDebtor extends ActiveRecord
         return null;
     }
 
+
+    public function findStaff($number)
+    {
+        $model =  self::findNumber($number);
+
+        if($model != null) {
+            if($model->type_user == 1){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
     public function getDebtorByPhone($number)
     {
         $model = self::findNumber($number);
 
         if($model != null) {
-            $debt = Debtor::findDebtor($model->id);
-        } else {
-            return false;
-        }
-
-        if($model->type_user != 1){
-            return true;
+            if($model->open_gate == 1){
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
