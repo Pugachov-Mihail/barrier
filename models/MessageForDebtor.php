@@ -123,7 +123,7 @@ class MessageForDebtor extends ActiveRecord
         ];
 
         if ($region != null && $model->type_scenary > 3 || $model->type_scenary == 8) {
-            $message['regions'] = implode(" пробел ", $region);
+            $message['regions'] = $region;
             $message['credit'] = $debtor->credit;
         } else {
             $message['credit'] = $debtor->credit;

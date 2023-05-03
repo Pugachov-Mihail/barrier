@@ -415,7 +415,7 @@ class Device extends ActiveRecord
                return false;
            }
        } else {
-           return false;
+           return null;
        }
     }
 

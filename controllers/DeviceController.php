@@ -240,9 +240,8 @@ class DeviceController extends Controller
         $token = AccessToken::findCurrentDevice($history->company_device);
         $sendStatus = Device::sendJournal($data, $token);
 
-        if (!$sendStatus){
-            Device::sendErrorLogs("Ошибка отправки журнала");
-            return false;
+        if (!$sendStatus || $sendStatus == null){
+            return "Нечего отправлять";
         } else {
             JournalSendData::sendHistory($data);
             HistoryBarrier::saveNewSendInInom();
