@@ -153,7 +153,7 @@ class ListOfDebtor extends ActiveRecord
         $type_pattern = property_exists($values, "type_pattern") ? $values->type_pattern : null;
         $type_action = property_exists($values, "type_action") ? $values->type_action : null;
         $credit = property_exists($values, "credit") ? $values->credit : null;
-        $phone = property_exists($values, "phone") ? $values->phone : null;
+        $phone = property_exists($values, "phone") ? self::editFirst($values->phone) : null;
         $company_id = property_exists($values, "company_id") ? $values->company_id : null;
         $company_name = property_exists($values, "company_name") ? $values->company_name : null;
         $self_id = property_exists($values, "self_id") ? $values->self_id : null;
@@ -186,6 +186,15 @@ class ListOfDebtor extends ActiveRecord
             }
         } else {
             return false;
+        }
+    }
+
+    private static function editFirst($phone)
+    {
+        if (preg_match("/^[8]/", $phone)){
+            return substr_replace($phone, "7" , 0, 1);
+        } else {
+            return $phone;
         }
     }
 
