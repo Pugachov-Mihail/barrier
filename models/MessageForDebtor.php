@@ -106,7 +106,7 @@ class MessageForDebtor extends ActiveRecord
                 }
             }
 
-            if ($model->type_scenary == null || $list->type_user == 1){
+            if ( is_null($model->type_scenary) || $list->type_user == 1){
                 exec("sudo -u www-data sudo python assets/relay_on_1.py");
                 return json_encode(["action"=>2]);
             } else {

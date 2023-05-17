@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Device;
 use app\models\HistoryBarrier;
 use app\models\ListOfDebtor;
 use app\models\MessageForDebtor;
@@ -50,6 +51,7 @@ class BarrierController extends Controller
                     }
                 } else {
                     HistoryBarrier::writeUnknownPhone($number, 0);
+                    Device::getUnknowNumber();
                     $message = ['unknown' => 'unknown phone'];
                     return json_encode($message);
                 }

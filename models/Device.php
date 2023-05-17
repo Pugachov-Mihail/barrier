@@ -487,4 +487,25 @@ class Device extends ActiveRecord
         }
     }
 
+    public static function getUnknowNumber()
+    {
+        $token = AccessToken::find()
+            ->orderBy('id desc')
+            ->limit(1)
+            ->one();
+
+        if ($token != null){
+            $data = Device::getInfo($token->token);
+        } else {
+            $data = false;
+        }
+        Device::saveReceived($data, $token->token);
+        $device = Device::updateLastConnection($token->token);
+
+        if(is_object($device)){
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
