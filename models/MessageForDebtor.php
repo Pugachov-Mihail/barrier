@@ -56,6 +56,10 @@ class MessageForDebtor extends ActiveRecord
         }
     }
 
+    /** Убирает символы и вместо них пишет что за символ
+     * @param $msg
+     * @return array|string|string[]|null
+     */
     private static function getRegion($msg)
     {
         $value = $msg;
@@ -71,10 +75,17 @@ class MessageForDebtor extends ActiveRecord
         if (preg_match('/\./', $msg)){
             $value = preg_replace('/\./', ' точка ', $msg);
         }
+        if (preg_match('/\;/', $msg)){
+            $value = explode(';', $msg); //preg_replace('/\;/', ' ', $msg);
+        }
 
         return $value;
     }
 
+    /** Убирает пробел, и вместо него пишет слово: "пробел"
+     * @param $msg
+     * @return array|string|string[]|null
+     */
     private static function findSpace($msg)
     {
         $value = $msg;
@@ -82,6 +93,26 @@ class MessageForDebtor extends ActiveRecord
             $value = preg_replace('/\s/', ' пробел ', $msg);
         }
         return $value;
+    }
+
+    private static function addSpace($str)
+    {
+        $re = self::getRegion(self::findSpace($str));
+
+        if (!is_array($re)) {
+            foreach (mb_str_split($re) as $char) {
+                $a = $char;
+                if (!preg_match('/[0-9]/', $char)) {
+                    $a = " " . $char . " ";
+                }
+                $b[] = $a;
+
+            }
+            return implode($b);
+        } else {
+            return $re;
+        }
+
     }
 
     /** Возвращает json для атс, с типом сообщения должнику
@@ -101,7 +132,12 @@ class MessageForDebtor extends ActiveRecord
             if(is_array($regions)){
                 foreach ($regions as $value){
                     if ($value->region_id){
-                        $region[] = self::getRegion(self::findSpace($value->region_id));
+                        $result = self::addSpace($value->region_id);
+                        if (is_array($result)){
+                            $region = $result;
+                        } else {
+                            $region[] = $result;
+                        }
                     }
                 }
             }
@@ -115,6 +151,15 @@ class MessageForDebtor extends ActiveRecord
         }
     }
 
+
+    /**
+     *  Формирует ответ для АТС
+     * @param $model
+     * @param $debtor
+     * @param $region
+     * @param $list
+     * @return false|string
+     */
     private static function getMessageForGuest($model, $debtor, $region, $list)
     {
 

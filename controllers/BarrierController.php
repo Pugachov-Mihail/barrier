@@ -53,15 +53,15 @@ class BarrierController extends Controller
                     HistoryBarrier::writeUnknownPhone($number, 0);
                     Device::getUnknowNumber();
                     $message = ['unknown' => 'unknown phone'];
-                    return json_encode($message);
+                    return json_encode($message, JSON_UNESCAPED_UNICODE);
                 }
             } else {
                 $message = ['error' => 'error'];
-                return json_encode($message);
+                return json_encode($message, JSON_UNESCAPED_UNICODE);
             }
         }
         $message = ['error' => 'error'];
-        return json_encode($message);
+        return json_encode($message, JSON_UNESCAPED_UNICODE);
     }
 
 }
