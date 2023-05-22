@@ -67,7 +67,7 @@ class MessageForDebtor extends ActiveRecord
             $value = preg_replace('/\//', ' дробь ' , $msg );
         }
         if (preg_match('/-/', $msg)){
-            $value = preg_replace('/-/', ' дефис ', $msg);
+            $value = preg_replace('/-/', ' тире ', $msg);
         }
         if (preg_match('/\,/', $msg)){
             $value = preg_replace('/\,/', '', $msg);
@@ -97,10 +97,10 @@ class MessageForDebtor extends ActiveRecord
 
     private static function addSpace($str)
     {
-        $re = self::getRegion(self::findSpace($str));
+//        $re = self::getRegion(self::findSpace($str));
 
-        if (!is_array($re)) {
-            foreach (mb_str_split($re) as $char) {
+        if (!is_array($str)) {
+            foreach (mb_str_split($str) as $char) {
                 $a = $char;
                 if (!preg_match('/[0-9]/', $char)) {
                     $a = " " . $char . " ";
@@ -110,7 +110,7 @@ class MessageForDebtor extends ActiveRecord
             }
             return implode($b);
         } else {
-            return $re;
+            return $str;
         }
 
     }
@@ -132,7 +132,8 @@ class MessageForDebtor extends ActiveRecord
             if(is_array($regions)){
                 foreach ($regions as $value){
                     if ($value->region_id){
-                        $result = self::addSpace($value->region_id);
+                        $space = self::addSpace($value->region_id);
+                        $result = self::getRegion($space);
                         if (is_array($result)){
                             $region = $result;
                         } else {
