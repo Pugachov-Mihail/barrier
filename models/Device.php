@@ -80,6 +80,28 @@ class Device extends ActiveRecord
         }
     }
 
+    /** Проверка логина и пароля, если не верно то вернет токен
+     * @return bool|mixed
+     */
+    public static function findDeviceReturnToken()
+    {
+        $model = self::find()->orderBy('id DESC')->one();
+
+        if (is_object($model)) {
+            $token = new self();
+            $result = $token->getTokenAuth($model->login, $model->password);
+
+            return $result;
+        }
+        return false;
+    }
+
+    /** Получение данных если токен существует
+     * @param $token
+     * @return false|string
+     * @throws \Throwable
+     * @throws \yii\db\Exception
+     */
     public function authConnectionGetDataDebtor($token)
     {
         if(is_bool($token)){

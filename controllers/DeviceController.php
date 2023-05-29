@@ -137,7 +137,12 @@ class DeviceController extends Controller
     public function actionIndex($pages=null)
     {
         if ($pages == null) {
-            return $this->redirect("authorization");
+            $model = Device::findDeviceReturnToken();
+            if (is_bool($model)){
+                return $this->redirect("authorization");
+            } else {
+                $pages = $model;
+            }
         }
 
         if (Device::findPages($pages)){
@@ -172,7 +177,12 @@ class DeviceController extends Controller
     public function actionDebtorList($pages=null)
     {
         if ($pages == null) {
-            return $this->redirect("authorization");
+            $model = Device::findDeviceReturnToken();
+            if (is_bool($model)){
+                return $this->redirect("authorization");
+            } else {
+                $pages = $model;
+            }
         }
 
 
@@ -192,17 +202,26 @@ class DeviceController extends Controller
      * @return Response | string
      * @throws Exception|\Exception
      */
-    public function actionGetDebtorList($pages)
+    public function actionGetDebtorList($pages=null)
     {
         if (\Yii::$app->user->isGuest) {
             return $this->redirect("authorization");
         }
 
-        if ($pages != null){
-            $data = Device::getInfo($pages);
-        } else {
-            $data = false;
+        if ($pages == null) {
+            $model = Device::findDeviceReturnToken();
+            if (is_bool($model)){
+                return $this->redirect("authorization");
+            } else {
+                $pages = $model;
+                if ($pages != null){
+                    $data = Device::getInfo($pages);
+                } else {
+                    $data = false;
+                }
+            }
         }
+
 
         if (is_bool($data)){
             $journal = JournalSendData::getJournal();
