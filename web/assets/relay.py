@@ -12,7 +12,11 @@ pin_number_3 = config.getint("relay_pins", "relay3") #пина из конфиг
 
 print ("ON pin:"+str(pin_number_3)+"\n")
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(pin_number_3, GPIO.OUT)   #устанавливаем пин на выходной сигнал
-GPIO.output(pin_number_3, GPIO.LOW)  #ставим логический ноль на выходе
+def main():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(pin_number_3, GPIO.OUT)   #устанавливаем пин на выходной сигнал
+    GPIO.output(pin_number_3, GPIO.LOW)  #ставим логический ноль на выходе
+
+
+main()
