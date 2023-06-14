@@ -116,6 +116,7 @@ class Device extends ActiveRecord
         }
     }
 
+
     /** Получение из апи всех разрешенных для проезда посетителей
      * @param $token
      * @return false|array
@@ -144,11 +145,16 @@ class Device extends ActiveRecord
 
         $guest = json_decode($res);
 
-        if ($guest->success){
+        if (is_object($guest) && $guest->success){
             return $guest->data;
         } else {
             \Yii::error("Ошибка получения списка посетителей из апи");
             self::sendErrorLogs("Ошибка получения списка посетителей из апи");
+            $model = self::find()
+                ->orderBy('id desc')
+                ->limit(1)
+                ->one();
+            $model->getTokenAuth($model->login, $model->password);
             return false;
         }
     }
@@ -188,6 +194,7 @@ class Device extends ActiveRecord
 
 
     /**
+     *  Сохранение к какой компании принадлежит
      * @throws \Throwable
      */
     public static function saveResult($company_id, $token, $company_name)
@@ -208,6 +215,13 @@ class Device extends ActiveRecord
         return $model != null ? $model : null;
     }
 
+    /**
+     * Сохранение устройства
+     * @param $login
+     * @param $pass
+     * @param $token
+     * @return AccessToken|false
+     */
     public static function saveDevice($login, $pass, $token)
     {
         if (self::findDeviceCreate($login, $pass) == null) {
@@ -429,7 +443,7 @@ class Device extends ActiveRecord
 
            $response = json_decode($res);
 
-           if ($response->success){
+           if (is_object($response) && $response->success){
                return $response->success;
            } else {
                \Yii::error("Ошибка отправки журнала посещений");
@@ -501,7 +515,7 @@ class Device extends ActiveRecord
         $response = json_decode($res);
 
 
-        if ($response->success){
+        if (is_object($response) && $response->success){
             return $response->success;
         } else {
              \Yii::error("Ошибка отправки логов");
