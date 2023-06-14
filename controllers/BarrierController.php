@@ -33,6 +33,7 @@ class BarrierController extends Controller
     {
         if($result = preg_match("/[0-9]/", $number)) {
             if (strlen($number) == 11) {
+                exec("sudo -u www-data sudo python assets/relay.py");
                 $model = new ListOfDebtor();
                 $openGate = ListOfDebtor::findNumber($number);
 
